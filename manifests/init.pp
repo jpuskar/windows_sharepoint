@@ -12,7 +12,7 @@
 #   languagepackspath => 'C:\\source\\LanguagePacks',
 #   sppath => 'C:\\source\\sharepoint.exe',
 #   spversion  => 'Foundation',
-#   setupaccountpassword  => 'P@ssw0rd',
+#   setup_account_password  => 'P@ssw0rd',
 #   spfarmaccount => 's-spfarm',
 #   dbserver => 'SQL_ALIAS',
 #   dbaliasinstance => 'localhost',
@@ -51,7 +51,8 @@ class windows_sharepoint
   $key                                       = '',
   $offline                                   = false,
   $autoadminlogon                            = true,
-  $setupaccountpassword                      = '',
+  $setup_account_password                    = '',
+  $setup_account_username                    = 'Administrator',
   $disableloopbackcheck                      = true,
   $disableunusedservices                     = true,
   $disableieenhancedsecurity                 = true,
@@ -67,12 +68,12 @@ class windows_sharepoint
   $centraladminport                          = 4242,
   $centraladminssl                           = false,
   
-  $dbserver                                  = 'SQL_ALIAS',                  # name of alias, or name of SQL Server
+  $dbserver                                  = 'SQL_ALIAS',        # name of alias, or name of SQL Server
   $dbalias                                   = true,
-  $dbaliasport                               = '',                  # if empty default will used
-  $dbaliasinstance                           = '',                  # name of SQL Server
+  $dbaliasport                               = '',                 # if empty default will used
+  $dbaliasinstance                           = '',                 # name of SQL Server
   
-  $dbprefix                                  = 'SP2013',            # Prefix for DB
+  $dbprefix                                  = 'SP2013',           # Prefix for DB
   $dbuser                                    = '',
   $dbpassword                                = '',
   $configdb                                  = 'ConfigDB',
@@ -146,6 +147,14 @@ class windows_sharepoint
     spversion         => $spversion,
   }
 
+  class{"windows_sharepoint::stage_bin":
+    basepath          => $basepath,
+    languagepackspath => $languagepackspath,
+    updatespath       => $updatespath,
+    sppath            => $sppath,
+    spversion         => $spversion,
+  }
+
   class{"windows_sharepoint::install":
   ## XML input file
     xmlinputfile                              => $xmlinputfile,
@@ -155,7 +164,8 @@ class windows_sharepoint
     key                                       => $key,
     offline                                   => $offline,
     autoadminlogon                            => $autoadminlogon,
-    setupaccountpassword                      => $setupaccountpassword,
+    setup_account_password                    => $setup_account_password,
+    setup_account_username                    => $setup_account_username,
     disableloopbackcheck                      => $disableloopbackcheck,
     disableunusedservices                     => $disableunusedservices,
     disableieenhancedsecurity                 => $disableieenhancedsecurity,
@@ -240,5 +250,9 @@ class windows_sharepoint
     spversion                                 => $spversion,
     computername                              => $computername,
   }
-  anchor{'windows_sharepoint::begin':} -> Class["windows_sharepoint::prepsp"] -> Class["windows_sharepoint::install"] -> anchor{'windows_sharepoint::end':}
+  anchor{'windows_sharepoint::begin':} ->
+  Class['windows_sharepoint::prepsp'] ->
+  Class['windows_sharepoint::stage_bin'] ->
+  Class['windows_sharepoint::install'] ->
+  anchor{'windows_sharepoint::end':}
 }
