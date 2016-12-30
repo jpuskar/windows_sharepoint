@@ -109,12 +109,14 @@ $sitecolowner = "<%= @sitecolowner%>";
 ### Part set XML info
 
 ## Install
-$xml.Configuration.Install.PIDKey = $key;
-if($spversion -ne 'Enterprise'){
-$xml.Configuration.Install.SKU = 'Standard';
-}else{
-$xml.Configuration.Install.SKU = 'Enterprise';
+
+if($spversion -eq "Foundation") {
+  $child = $xml.Configuration.Install.SelectSingleNode("PIDKey")
+  $xml.Configuration.Install.RemoveChild($child)
+} else {
+  $xml.Configuration.Install.PIDKey = $key;
 }
+$xml.Configuration.Install.SKU = $spversion;
 $xml.Configuration.Install.OfflineInstall = $offline;
 $xml.Configuration.Install.AutoAdminLogon.Enable = $autoadminlogon;
 $xml.Configuration.Install.AutoAdminLogon.Password = $setupaccountpassword;
@@ -123,15 +125,17 @@ $xml.Configuration.Install.Disable.LoopbackCheck = $disableloopbackcheck;
 $xml.Configuration.Install.Disable.UnusedServices = $disableunusedservices;
 $xml.Configuration.Install.Disable.IEEnhancedSecurity = $disableieenhancedsecurity;
 $xml.Configuration.Install.Disable.CertificateRevocationListCheck = $disablecertificaterevocationlistcheck;
+# $xml.Configuration.Install.RemoteInstall.Enable = $false;
 
 ## Farm
 $xml.Configuration.Farm.Passphrase = $passphrase;
-$xml.Configuration.Farm.Account.Username = "$env:userdomain\" + $spfarmaccount;
+$xml.Configuration.Farm.Account.Username = $spfarmaccount;
 if($spfarmpassword -eq $null -or $spfarmpassword -eq ""){
   $xml.Configuration.Farm.Account.Password = Get-Password -account $spfarmaccount -userxml $userxml;
 }else{
   $xml.Configuration.Farm.Account.Password = $spfarmpassword;
 }
+
 $xml.Configuration.Farm.CentralAdmin.Provision = $centraladminprovision;
 $xml.Configuration.Farm.CentralAdmin.Database = $centraladmindatabase;
 $xml.Configuration.Farm.CentralAdmin.Port = $centraladminport;
@@ -152,28 +156,28 @@ $xml.Configuration.Farm.Services.FoundationWebApplication.Start = $foundationweb
 #managed account
 foreach($manageaccount in $xml.Configuration.Farm.ManagedAccounts.ManagedAccount){
   if($manageaccount.CommonName -eq "spservice"){
-    $manageaccount.Username = "$env:userdomain\" + $spservicesaccount;
+    $manageaccount.Username = $spservicesaccount;
     if($spservicespassword -eq $null -or $spservicespassword -eq ""){
       $manageaccount.Password = Get-Password -account $spservicesaccount -userxml $userxml;
     }else{
       $manageaccount.Password = $spservicespassword;
     }
   }elseif($manageaccount.CommonName -eq "Portal"){
-    $manageaccount.Username = "$env:userdomain\" + $spapppoolaccount;
+    $manageaccount.Username = $spapppoolaccount;
     if($spapppoolpassword -eq $null -or $spapppoolpassword -eq ""){
       $manageaccount.Password = Get-Password -account $spapppoolaccount -userxml $userxml;
     }else{
       $manageaccount.Password = $spapppoolpassword;
     }
   }elseif($manageaccount.CommonName -eq "SearchService"){
-    $manageaccount.Username = "$env:userdomain\" + $spsearchaccount;
+    $manageaccount.Username = $spsearchaccount;
     if($spsearchpassword -eq $null -or $spsearchpassword -eq ""){
       $manageaccount.Password = Get-Password -account $spsearchaccount -userxml $userxml;
     }else{
       $manageaccount.Password = $spsearchpassword;
     }
   }elseif($manageaccount.CommonName -eq "MySiteHost"){
-    $manageaccount.Username = "$env:userdomain\" + $spusrprfaccount;
+    $manageaccount.Username = $spusrprfaccount;
     if($spusrprfpassword -eq $null -or $spusrprfpassword -eq ""){
       $manageaccount.Password = Get-Password -account $spusrprfaccount -userxml $userxml;
     }else{
@@ -181,8 +185,8 @@ foreach($manageaccount in $xml.Configuration.Farm.ManagedAccounts.ManagedAccount
     }
   }
 }
-$xml.Configuration.Farm.ObjectCacheAccounts.SuperUser = "$env:userdomain\" + $spsuperuseraccount;
-$xml.Configuration.Farm.ObjectCacheAccounts.SuperReader = "$env:userdomain\" + $spsuperreaderaccount
+$xml.Configuration.Farm.ObjectCacheAccounts.SuperUser = $spsuperuseraccount;
+$xml.Configuration.Farm.ObjectCacheAccounts.SuperReader = $spsuperreaderaccount
 
 #Logging
 $xml.Configuration.Farm.Logging.IISLogs.Compress = $logcompress;
@@ -208,20 +212,20 @@ $xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCol
 $xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCollection.Time24 = $sitecoltime24;
 $xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCollection.LCID = $sitecollcid;
 $xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCollection.Locale = $sitecollocale;
-$xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCollection.Owner = "$env:userdomain\"+$sitecolowner;
+$xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCollection.Owner = $sitecolowner;
 
 ##switch all alias to the one defined
-$xml.Configuration.ServiceApps.ManagedMetadataServiceApp.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.UserProfileServiceApp.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.StateService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.SPUsageService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.SecureStoreService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.AppManagementService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.SubscriptionSettingsService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.WebAnalyticsService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.MachineTranslationService.Database.DBServer = $dbserver;
-$xml.Configuration.ServiceApps.BusinessDataConnectivity.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.ManagedMetadataServiceApp.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.UserProfileServiceApp.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.StateService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.SPUsageService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.SecureStoreService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.AppManagementService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.SubscriptionSettingsService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.WebAnalyticsService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.MachineTranslationService.Database.DBServer = $dbserver;
+#$xml.Configuration.ServiceApps.BusinessDataConnectivity.Database.DBServer = $dbserver;
 
 if($spversion -eq 'Foundation'){
 	$xml.Configuration.ServiceApps.EnterpriseSearchService.Provision = "false";
@@ -233,7 +237,7 @@ $xml.Configuration.ServiceApps.ManagedMetadataServiceApp.Provision = $computerna
 $xml.Configuration.ServiceApps.EnterpriseSearchService.Provision = $computername;
 $xml.Configuration.ServiceApps.UserProfileServiceApp.Provision = $computername;
 	$xml.Configuration.ServiceApps.WorkManagementService.Provision = $computername;
-$xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccount = "$env:userdomain\"+$spsyncaccount;
+$xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccount = $spsyncaccount;
 $xml.Configuration.ServiceApps.UserProfileServiceApp.MySiteHostLocation = $mysitehost;
 $xml.Configuration.ServiceApps.UserProfileServiceApp.MySiteManagedPath = $mysitemanagedpath;
 
@@ -262,7 +266,7 @@ $xml.Configuration.ServiceApps.BusinessDataConnectivity.Provision = $computernam
 if($spversion -eq 'Enterprise'){
 if($spexcelaccount -ne "" -or $spexcelaccount -ne $null){
 	$xml.Configuration.EnterpriseServiceApps.ExcelServices.Provision = "true";
-	$xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDUser = "$env:userdomain\"+$spexcelaccount;
+	$xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDUser = $spexcelaccount;
 	if($spexcelpassword -eq $null -or $spexcelpassword -eq ""){
 	  $xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDPassword = Get-Password -account $spexcelaccount -userxml $userxml;
 	}else{
@@ -272,13 +276,15 @@ if($spexcelaccount -ne "" -or $spexcelaccount -ne $null){
 }
 }
 ##switch user for crawl
-$xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.ContentAccessAccount = "$env:userdomain\"+$spcrawlaccount;
+$xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.ContentAccessAccount = $spcrawlaccount;
 if($spcrawlpassword -eq $null -or $spcrawlpassword -eq ""){
   $xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.ContentAccessAccountPassword = Get-Password -account $spcrawlaccount -userxml $userxml;
 }else{
   $xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.ContentAccessAccountPassword = $spcrawlpassword;
 }
-if((Test-Path "$path/xmlgenerated") -eq $false){New-Item -Name "xmlgenerated" -Path $path -type file;}
 
-
+$msg = "Saving file at: """ + $xmlpath + """.";
+write-output $msg;
 $xml.save($xmlpath);
+
+if((Test-Path "$path/xmlgenerated") -eq $false){New-Item -Name "xmlgenerated" -Path $path -type file;}
