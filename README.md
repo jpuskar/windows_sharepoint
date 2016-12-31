@@ -4,7 +4,7 @@ This is  a fork of jriviere's windows_sharepoint module.
 
 ## Module Description
 
-This module allow you to:
+This module allows you to:
 
 - Install SharePoint 2013.
 - Manage SharePoint users and groups.
@@ -29,34 +29,25 @@ The parent version of this project was tested on the following, and therefore th
 
 V 0.0.7.1:
 
-### Summary
+### manifests/init.pp
 
-- Fixed inability to install SharePoint foundation.
-- Fixed several installer problems such as the dotnet 4.6 SharePoint installer bug.
-- Modified exec commands to work despite the Exec Powershell provider return code issues.
 - Added setup_account_username option.
-- Changed defaults for dbalias, dbaliasport, dbaliasinstance, dbserver for clarity.
-- Updated to AutoSpInstaller 3.99.60.
-
-### Details
-
-#### manifests/init.pp
-
 - Added class anchors.
 - Added class windows_sharepoint::stage_bin.
 
-#### manifests/install.pp
+### manifests/install.pp
 
+- Changed defaults for dbalias, dbaliasport, dbaliasinstance, dbserver.
 - Added param setup_account_username.
 - Refactored exec commands for deduplication and to workaround powershell exec provider return code issues.
 - Added code to call setacl.exe in order to workaround SharePoint 2013 installer bug.
 - Added code to manage AutoSpInstaller reboots.
 
-#### manifests/prepsp.pp
+### manifests/prepsp.pp
 
 - Refactored for readability.
 
-#### templates/autospinstaller.erb
+### templates/autospinstaller.erb
 
 - Excluded some nodes when installing Sharepoint Foundation.
 - Removed automatic domain prepending to usernames to support cross-domain installs.
@@ -76,7 +67,7 @@ Depends on the following modules:
 In addition, the module expects that:
 
 - setacl.exe is available in the system path.
-- the modified AutoSpInstaller package is extracted to $basepath\\Puppet-SharePoint\\.
+- the modified AutoSpInstaller is extracted to $basepath\\Puppet-SharePoint\\.
 
 The folder structure should look like this, if $basepath is kept to at the default of 'C:'.
 
