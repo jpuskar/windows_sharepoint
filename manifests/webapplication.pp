@@ -25,17 +25,21 @@ define windows_sharepoint::webapplication(
   }
  if($ensure == present){
     exec{"WebApp - Create - ${webappname}":
-      command => "Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;if('${databasename}' -eq ''){New-SPWebApplication -Url '${url}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}else{New-SPWebApplication -Url '${url}' -DatabaseName '${databasename}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"\$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}",
-      provider => "powershell",
-      onlyif   => "if((test-path \"HKLM:\\SOFTWARE\\AutoSPInstaller\\\") -eq \$true){if((Get-ItemProperty -Path \"HKLM:\\SOFTWARE\\AutoSPInstaller\\\" -ErrorAction SilentlyContinue).PuppetSharePointInstallInProgress -eq '1'){exit 1;}else{Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;\$getSPWebApplication = Get-SPWebApplication | Where-Object {\$_.DisplayName -eq '${webappname}'};if(\$getSPWebApplication -eq \$null){}else{exit 1;}}}else{Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;\$getSPWebApplication = Get-SPWebApplication | Where-Object {\$_.DisplayName -eq '${webappname}'};if(\$getSPWebApplication -eq \$null){}else{exit 1;}}",
-      timeout  => "1200",
+      command  => "Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;if('${databasename}' -eq ''){New-SPWebApplication -Url '${url}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}else{New-SPWebApplication -Url '${url}' -DatabaseName '${databasename}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"\$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}",
+      provider => 'powershell',
+      onlyif   => " \
+Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue; \
+\$sp_web_apps = \$null; \$sp_web_apps = Get-SPWebApplication; \
+\$sp_web_app_names = \$null; \$sp_web_app_names = \$sp_web_apps | Select-Object DisplayName -ExpandProperty DisplayName; \
+If(\$sp_web_app_names -contains '${webappname}') { Exit 0;} Else {Exit 1;}",
+      timeout  => '1200',
     }
   }else{
     exec{"WebApp - Remove - ${webappname}":
-      command => "Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;Remove-SPWebApplication '${webappname}' -Confirm:\$false -DeleteIISSite -RemoveContentDatabases",
-      provider => "powershell",
+      command  => "Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;Remove-SPWebApplication '${webappname}' -Confirm:\$false -DeleteIISSite -RemoveContentDatabases",
+      provider => 'powershell',
       onlyif   => "if((test-path \"HKLM:\\SOFTWARE\\AutoSPInstaller\\\") -eq \$true){if((Get-ItemProperty -Path \"HKLM:\\SOFTWARE\\AutoSPInstaller\\\" -ErrorAction SilentlyContinue).PuppetSharePointInstallInProgress -eq '1'){exit 1;}else{Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;\$getSPWebApplication = Get-SPWebApplication | Where-Object {\$_.DisplayName -eq '${webappname}'};if(\$getSPWebApplication -eq \$null){exit 1;}}}else{Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;\$getSPWebApplication = Get-SPWebApplication | Where-Object {\$_.DisplayName -eq '${webappname}'};if(\$getSPWebApplication -eq \$null){exit 1;}}",
-      timeout  => "600",
+      timeout  => '600',
     }
   }
 }
