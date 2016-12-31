@@ -29,13 +29,24 @@ The parent version of this project was tested on the following, and therefore th
 
 V 0.0.7.1:
 
-### manifests/init.pp
+### Summary
+
+- Fixed inability to install SharePoint foundation.
+- Fixed several installer problems such as the dotnet 4.6 SharePoint installer bug.
+- Modified exec commands to work despite the Exec Powershell provider return code issues.
+- Added setup_account_username option.
+- Changed defaults for dbalias, dbaliasport, dbaliasinstance, dbserver for clarity.
+- Updated to AutoSpInstaller 3.99.60.
+
+### Details
+
+#### manifests/init.pp
 
 - Added setup_account_username option.
 - Added class anchors.
 - Added class windows_sharepoint::stage_bin.
 
-### manifests/install.pp
+#### manifests/install.pp
 
 - Changed defaults for dbalias, dbaliasport, dbaliasinstance, dbserver.
 - Added param setup_account_username.
@@ -43,11 +54,11 @@ V 0.0.7.1:
 - Added code to call setacl.exe in order to workaround SharePoint 2013 installer bug.
 - Added code to manage AutoSpInstaller reboots.
 
-### manifests/prepsp.pp
+#### manifests/prepsp.pp
 
 - Refactored for readability.
 
-### templates/autospinstaller.erb
+#### templates/autospinstaller.erb
 
 - Excluded some nodes when installing Sharepoint Foundation.
 - Removed automatic domain prepending to usernames to support cross-domain installs.
@@ -77,7 +88,7 @@ The folder structure should look like this, if $basepath is kept to at the defau
 
 ## Resources
 
-### ::windows_sharepoint
+### windows_sharepoint
 
 Installs and configures sharepoint.
 
