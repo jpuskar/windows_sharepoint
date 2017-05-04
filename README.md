@@ -25,14 +25,39 @@ Tested with :
 
 This module is only compatible with SharePoint 2013.
 
+The parent version of this project was tested on the following, and therefore these probably still work:
+
+- SharePoint Standard 2013 SP1
+- SharePoint EnterPrise 2013 SP1
+
+## Changelog
+
+V 0.0.7.1:
+
+### Summary
+
+
+
+### Details
+
+#### manifests/init.pp
+
+- Added setup_account_username option.
+- Added class anchors.
+- Added class windows_sharepoint::stage_bin.
+
 
 ##Changelog
-
-V 0.0.8 :
+V 0.0.8:
+ - Fixed inability to install SharePoint foundation.
+ - Modified exec commands to work despite the Exec Powershell provider return code issues.
+ - Added setup_account_username option.
+ - Changed defaults for dbalias, dbaliasport, dbaliasinstance, dbserver for clarity.
+ - Updated to AutoSpInstaller 3.99.60.
+ - Added code to manage AutoSpInstaller reboots.
  - Refactored to use heredocs for readability.
  - Refactored to use underscores for word designation in variable names.
  - Added code to workaround newer dot net version when installing SharePoint.
- - Fixed various bugs with installing SharePoint 2013 Foundation.
 
 V 0.0.7 :
  - Add -ea option on powershell command
@@ -48,6 +73,25 @@ Depends on the following modules:
 ##SharePointInstall
 Class windows_sharepoint :
 Permit installation of SharePoint
+- ['puppetlabs/powershell', '>=1.0.2'](https://forge.puppetlabs.com/puppetlabs/powershell),
+- ['puppetlabs/stdlib', '>= 4.2.1'](https://forge.puppetlabs.com/puppetlabs/stdlib)
+
+In addition, the module expects that:
+
+- setacl.exe is available in the system path.
+- the modified AutoSpInstaller is extracted to $basepath\\Puppet-SharePoint\\.
+
+The folder structure should look like this, if $basepath is kept to at the default of 'C:'.
+
+- C:\Puppet-SharePoint\\AutoSPInstaller\2013\
+- C:\Puppet-SharePoint\\AutoSPInstaller\AutoSPInstallerMain.ps1
+- C:\Puppet-SharePoint\\AutoSPInstaller\AutoSPInstallerInput.xml
+
+## Resources
+
+### windows_sharepoint
+
+Installs and configures sharepoint.
 
     class{'windows_sharepoint':
       languagepackspath     => "C:\\source\\LanguagePacks",   # path where we are going to take the updates and put them in the correct folder for autospinstaller (not yet implemented)
@@ -167,8 +211,8 @@ Apache License, Version 2.0
 
 Contact
 -------
-[Jerome RIVIERE](https://github.com/ninja-2)
+[John Puskar](https://github.com/jpuskar)
 
 Support
 -------
-Please log tickets and issues at [Github site](https://github.com/insentia/windows_sharepoint/issues)
+Please log tickets and issues at [Github site](https://github.com/jpuskar/windows_sharepoint/issues)

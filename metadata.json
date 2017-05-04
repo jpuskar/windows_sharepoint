@@ -2,14 +2,13 @@
   "name": "jpuskar-windows_sharepoint",
   "version": "0.0.8",
   "author": "jriviere",
-  "summary": "Module for managing SharePoint 2013",
+  "summary": "Module for managing SharePoint 2013.",
   "license": "Apache License, Version 2.0",
   "source": "https://github.com/jpuskar/windows_sharepoint",
   "project_page": "https://github.com/jpuskar/windows_sharepoint",
   "issues_url": "https://github.com/jpuskar/windows_sharepoint/issues",
   "description": "Module for managing SharePoint 2013. Can Install SharePoint 2013, Create/Remove WebApp and SiteCol",
   "types": [
-  
   ],
   "operatingsystem_support": [
     {
