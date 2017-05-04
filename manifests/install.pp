@@ -154,12 +154,36 @@ ${base_path}/Puppet-SharePoint/generatexml.ps1",
     $cmd_launch_installer_frag = @(END_CMD_LAUNCH_INSTALLER)
       $password = ConvertTo-SecureString $raw_password -AsPlainText -Force;
       $cred = New-Object System.Management.Automation.PSCredential ($username, $password);
-      $arg_list = '-ExecutionPolicy Bypass .\AutoSPInstallerMain.ps1 -inputFile "' + $base_path + '\Puppet-SharePoint\AutoSPInstaller\AutoSPInstallerInput.xml" -unattended';
+      $working_dir = $base_path + '\Puppet-SharePoint\AutoSPInstaller\';
+      $auto_sp_input_file = $base_path + '\Puppet-SharePoint\AutoSPInstaller\AutoSPInstallerInput.xml';
+      $auto_sp_main_file = $base_path + '\Puppet-SharePoint\AutoSPInstaller\AutoSPInstallerMain.ps1';
+
+      $auto_sp_cmd = '';
+      $auto_sp_cmd += ' ' + $auto_sp_main_file + ' ';
+      $auto_sp_cmd += ' -inputFile ' + $auto_sp_input_file + ' ';
+      $auto_sp_cmd += ' -unattended';
+
+      $arg_list2 = "";
+      $arg_list2 += ' -ExecutionPolicy Bypass ';
+      # $arg_list2 += ' -WorkingDirectory ' + $working_dir + ' ';
+      $arg_list2 += ' ' + $auto_sp_cmd + ' ';
+
+      $sp_cmd = '';
+      $sp_cmd += 'Start-Process powershell ';
+      $sp_cmd += ' -Verb runas ';
+      $sp_cmd += ' -WorkingDirectory ' + $working_dir + ' ';
+      $sp_cmd += ' -ArgumentList ' + "'" + $arg_list2 + "'";
+
+      $arg_list1 = '';
+      $arg_list1 += ' -NoProfile ';
+      $arg_list1 += ' -Command &{' + $sp_cmd + '}';
+
+      Write-Host $arg_list1;
       $install_proc = Start-Process "$pshome\powershell.exe" `
         -Credential $cred `
         -Wait `
-        -WorkingDirectory ($base_path + '\Puppet-SharePoint\AutoSPInstaller\') `
-        -ArgumentList $arg_list `
+        -WorkingDirectory $working_dir `
+        -ArgumentList $arg_list1 `
         -PassThru `
         -RedirectStandardOutput "C:/puppet-sharepoint/install.log";
       If($install_proc.exitcode -ne 0) {Throw $install_proc;}

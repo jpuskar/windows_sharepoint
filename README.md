@@ -48,6 +48,9 @@ V 0.0.7.1:
 
 
 ##Changelog
+V 0.0.10:
+ - Fixed regression issue in cmd_launch_installer_frag which caused SharePoint installation to fail.
+
 V 0.0.9:
  - Refactored to use heredocs for readability.
  - Refactored to use underscores for word designation in variable names.
