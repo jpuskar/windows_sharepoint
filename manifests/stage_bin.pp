@@ -3,36 +3,55 @@
 #
 ##
 class windows_sharepoint::stage_bin(
-  $basepath          = $basepath,
-  $languagepackspath = $languagepackspath,
-  $updatespath       = $updatespath,
-  $sppath            = $sppath,
-  $spversion         = $spversion,
+  $base_path           = $windows_sharepoint::base_path,
+  $language_packs_path = $windows_sharepoint::language_packs_path,
+  $updates_path        = $windows_sharepoint::updates_path,
+  $sp_path             = $windows_sharepoint::sp_path,
+  $sp_version          = $windows_sharepoint::sp_version,
+  # $stage_prereqs       = false,
+  # $prereq_archive_path = 'c:\\install_files\\foundation\\prerequisiteinstallerfiles',
 ) {
-
-  if($spversion == 'Foundation') {
-    exec{'extract_sp':
-      command => " \
-\$ErrorActionPreference = 'Stop'; \
-write-output \"username: \$env:username \"; \
-Start-Process '${sppath}' -ArgumentList '/extract:C:\\Puppet-SharePoint\\2013\\Foundation /q' -Wait",
-      provider => 'powershell',
-      onlyif   => "if((test-path '${basepath}\\Puppet-SharePoint\\2013\\Foundation\\setup.exe') -eq \$true){exit 1}",
-      timeout  => '600',
-    }
+  # TODO: Swap out artifactory for remote_file
+  if($sp_version == 'Foundation') {
+    #   if $stage_prereqs {
+    #     $prereq_files = hiera_hash('windows_sharepoint::prereq_files', {} )
+    #     $prereq_files.each |$file, $file_properties| {
+    #       archive::artifactory {$file:
+    #         archive_path => $prereq_archive_path,
+    #         extract      => false,
+    #         cleanup      => false,
+    #         url          => $file_properties[url], # lint:ignore:variable_scope
+    #       }
+    #     }
+    #     exec{'copy_sp':
+    #       command  => 'Copy-Item -Recurse C:\\install_files\\foundation C:\\Puppet-SharePoint\\2013',
+    #       provider => 'powershell',
+    #       onlyif   => "If((Test-Path '${base_path}\\Puppet-SharePoint\\2013\\foundation\\setup.exe') -eq \$true){Exit 1}",
+    #       timeout  => '600',
+    #       require  => Archive::Artifactory[keys($prereq_files)],
+    #     }
+    #   }
+    # else {
+        exec{'copy_sp':
+          command  => 'Copy-Item -Recurse C:\\install_files\\foundation C:\\Puppet-SharePoint\\2013',
+          provider => 'powershell',
+          onlyif   => "If((Test-Path '${base_path}\\Puppet-SharePoint\\2013\\foundation\\setup.exe') -eq \$true){Exit 1}",
+          timeout  => '600',
+        }
+    # }
   } else {
       windows_isos{'SPStandard':
         ensure   => present,
-        isopath  => $sppath,
-        xmlpath  => "${basepath}\\Puppet-SharePoint\\isos.xml",
+        isopath  => $sp_path,
+        xmlpath  => "${base_path}\\Puppet-SharePoint\\isos.xml",
       } ->
-      file{"$basepath\\Puppet-SharePoint\\spcopy.ps1":
+      file{"${base_path}\\Puppet-SharePoint\\spcopy.ps1":
         content => template('windows_sharepoint/prepsp-server.erb'),
       } ->
-      exec{'extract SP':
-        command => "$basepath\\Puppet-SharePoint\\spcopy.ps1;",
+      exec{'extract_sp':
+        command => "${base_path}\\Puppet-SharePoint\\spcopy.ps1;",
         provider => 'powershell',
-        onlyif   => "if((test-path '${basepath}\\Puppet-SharePoint\\2013\\SharePoint\\setup.exe') -eq \$true){exit 1}",
+        onlyif   => "If((Test-Path '${base_path}\\Puppet-SharePoint\\2013\\SharePoint\\setup.exe') -eq \$true){Exit 1}",
         timeout  => '600',
       }
   }

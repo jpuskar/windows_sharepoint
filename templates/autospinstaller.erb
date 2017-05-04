@@ -1,108 +1,119 @@
 function Get-Password(){
-Param([Parameter(Mandatory = $true)][String] $account,[Parameter(Mandatory = $true)][String] $userxml)
-[xml]$xml = New-Object system.Xml.XmlDocument
-[xml]$xml = Get-Content $userxml
-foreach($user in $xml.configuration.users.user){if($user.name -eq $account){return $user.password;}}
+  Param(
+    [Parameter(Mandatory = $true)]
+    [String] $account,
+    [Parameter(Mandatory = $true)]
+    [String] $userxml
+  )
+  
+  [xml]$xml = New-Object system.Xml.XmlDocument
+  [xml]$xml = Get-Content $userxml
+  Foreach ($user in $xml.configuration.users.user) {
+    If($user.name -eq $account) {
+      Return $user.password;
+    }
+  }
 }
-$basepath = "<%= @basepath%>";
+
+$basepath = "<%= @base_path%>";
 $path = $basepath + "\\Puppet-SharePoint\\";
 $xmlpath = $path + "AutoSPInstaller\AutoSPInstallerInput.xml"
 [xml]$xml = New-Object system.Xml.XmlDocument
 [xml]$xml = Get-Content $xmlpath
 
 ## XML for users password
-$userxml = "<%= @userxml%>";
+$userxml = "<%= @user_xml%>";
 
 ## Install parameters
 $key = "<%= @key%>";
 $offline = "<%= @offline%>";
-$autoadminlogon   = "<%= @autoadminlogon%>";
-$setupaccountpassword   = "<%= @setupaccountpassword%>";
-$disableloopbackcheck   = "<%= @disableloopbackcheck%>";
-$disableunusedservices   = "<%= @disableunusedservices%>";
-$disableieenhancedsecurity  = "<%= @disableieenhancedsecurity%>";
-$disablecertificaterevocationlistcheck  = "<%= @certificaterevocationlistcheck%>";
+$autoadminlogon   = "<%= @auto_admin_logon%>";
+$setupaccountpassword   = "<%= @setup_account_password%>";
+$disableloopbackcheck   = "<%= @disable_loopback_check%>";
+$disableunusedservices   = "<%= @disable_unused_services%>";
+$disableieenhancedsecurity  = "<%= @disable_ie_enhanced_security%>";
+$disablecertificaterevocationlistcheck  = "<%= @certificate_revocation_list_check%>";
 
 ## Farm parameters
-$passphrase = "<%= @passphrase%>";
-$spfarmaccount = "<%= @spfarmaccount%>";
-$spfarmpassword = "<%= @spfarmpassword%>";
+$passphrase = "<%= @pass_phrase%>";
+$spfarmaccount = "<%= @sp_farm_account%>";
+$spfarmpassword = "<%= @sp_farm_password%>";
 
-$centraladminprovision = "<%= @centraladminprovision%>";
-$centraladmindatabase = "<%= @centraladmindatabase%>";
-$centraladminport = "<%= @centraladminport%>";
-$centraladminssl = "<%= @centraladminssl%>";
+$centraladminprovision = "<%= @central_admin_provision%>";
+$centraladmindatabase = "<%= @central_admin_database%>";
+$centraladminport = "<%= @central_admin_port%>";
+$centraladminssl = "<%= @central_admin_ssl%>";
 
-$dbserver = "<%= @dbserver%>";
-$dbalias = "<%= @dbalias%>";
-$dbaliasport = "<%= @dbaliasport%>";
-$dbaliasinstance = "<%= @dbaliasinstance%>";
-$dbprefix  = "<%= @dbprefix%>";
-$dbuser = "<%= @dbuser%>";
-$dbpassword = "<%= @dbpassword%>";
-$configdb = "<%= @configdb%>";
+$dbserver = "<%= @db_server%>";
+$dbalias = "<%= @db_alias%>";
+$dbaliasport = "<%= @db_alias_port%>";
+$dbaliasinstance = "<%= @db_alias_instance%>";
+$dbprefix  = "<%= @db_prefix%>";
+$dbuser = "<%= @db_user%>";
+$dbpassword = "<%= @db_password%>";
+$configdb = "<%= @config_db%>";
 
 ## Services part
-$sanboxedcodeservicestart = "<%= @sanboxedcodeservicestart%>";
-$claimstowindowstokenserverstart = "<%= @claimstowindowstokenserverstart%>";
-$claimstowindowstokenserverupdateaccount = "<%= @claimstowindowstokenserverupdateaccount%>";
+$sanboxedcodeservicestart = "<%= @sanboxed_code_service_start%>";
+$claimstowindowstokenserverstart = "<%= @claims_to_windows_token_server_start%>";
+$claimstowindowstokenserverupdateaccount = "<%= @claims_to_windows_token_server_update_account%>";
 
-$smtpinstall = "<%= @smtpinstall%>";
-$smtpoutgoingemailconfigure = "<%= @smtpoutgoingemailconfigure%>";
-$smtpoutgoingserver = "<%= @smtpoutgoingserver%>";
-$smtpoutgoingemailaddress = "<%= @smtpoutgoingemailaddress%>";
-$smtpoutgoingreplytoemail  = "<%= @smtpoutgoingreplytoemail%>";
+$smtpinstall = "<%= @smtp_install%>";
+$smtpoutgoingemailconfigure = "<%= @smtp_outgoing_email_configure%>";
+$smtpoutgoingserver = "<%= @smtp_outgoing_server%>";
+$smtpoutgoingemailaddress = "<%= @smtp_outgoing_email_address%>";
+$smtpoutgoingreplytoemail  = "<%= @smtp_outgoing_reply_to_email%>";
 
-$incomingemailstart = "<%= @incomingemailstart%>";
-$distributedcachestart = "<%= @distributedcachestart%>";
-$workflowtimerstart = "<%= @workflowtimerstart%>";
-$foundationwebapplicationstart = "<%= @foundationwebapplicationstart%>";
+$incomingemailstart = "<%= @incoming_email_start%>";
+$distributedcachestart = "<%= @distributed_cache_start%>";
+$workflowtimerstart = "<%= @workflow_timer_start%>";
+$foundationwebapplicationstart = "<%= @foundation_web_application_start%>";
 
-$spapppoolaccount = "<%= @spapppoolaccount%>";
-$spapppoolpassword = "<%= @spapppoolpassword%>";
-$spservicesaccount = "<%= @spservicesaccount%>";
-$spservicespassword = "<%= @spservicespassword%>";
-$spsearchaccount = "<%= @spsearchaccount%>";
-$spsearchpassword = "<%= @spsearchpassword%>";
-$spsuperreaderaccount = "<%= @spsuperreaderaccount%>";
-$spsuperuseraccount = "<%= @spsuperuseraccount%>";
-$spcrawlaccount = "<%= @spcrawlaccount%>";
-$spcrawlpassword = "<%= @spcrawlpassword%>";
-$spsyncaccount = "<%= @spsyncaccount%>";
-$spsyncpassword = "<%= @spsyncpassword%>";
-$spusrprfaccount = "<%= @spusrprfaccount%>";
-$spusrprfpassword = "<%= @spusrprfpassword%>";
-$spexcelaccount = "<%= @spexcelaccount%>";
-$spexcelpassword = "<%= @spexcelpassword%>";
+$spapppoolaccount = "<%= @sp_app_pool_account%>";
+$spapppoolpassword = "<%= @sp_app_pool_password%>";
+$spservicesaccount = "<%= @sp_services_account%>";
+$spservicespassword = "<%= @sp_services_password%>";
+$spsearchaccount = "<%= @sp_search_account%>";
+$spsearchpassword = "<%= @sp_search_password%>";
+$spsuperreaderaccount = "<%= @sp_super_reader_account%>";
+$spsuperuseraccount = "<%= @sp_super_user_account%>";
+$spcrawlaccount = "<%= @sp_crawl_account%>";
+$spcrawlpassword = "<%= @sp_crawl_password%>";
+$spsyncaccount = "<%= @sp_sync_account%>";
+$spsyncpassword = "<%= @sp_sync_password%>";
+$spusrprfaccount = "<%= @sp_usr_prf_account%>";
+$spusrprfpassword = "<%= @sp_usr_prf_password%>";
+$spexcelaccount = "<%= @sp_excel_account%>";
+$spexcelpassword = "<%= @sp_excel_password%>";
 ## Log
-$logcompress = "<%= @logcompress%>";
-$iislogspath = "<%= @iislogspath%>";
-$ulslogspath = "<%= @ulslogspath%>";
-$usagelogspath = "<%= @usagelogspath%>";
+$logcompress = "<%= @log_compress%>";
+$iislogspath = "<%= @iis_logs_path%>";
+$ulslogspath = "<%= @uls_logs_path%>";
+$usagelogspath = "<%= @usage_logs_path%>";
 
-$spversion = "<%= @spversion%>";
-$computername = "<%= @computername%>";
-$removedefaultwebapp = "<%= @removedefaultwebapp%>";
+$spversion = "<%= @sp_version%>";
+$computername = "<%= @computer_name%>";
+$removedefaultwebapp = "<%= @remove_default_web_app%>";
 
 ## WebApp
-$webappurl = "<%= @webappurl%>";
-$applicationPool = "<%= @applicationPool%>";
-$webappname = "<%= @webappname%>";
-$webappport = "<%= @webappport%>";
-$webappdatabasename = "<%= @webappdatabasename%>";
+$webappurl = "<%= @web_app_url%>";
+$applicationPool = "<%= @application_pool%>";
+$webappname = "<%= @web_app_name%>";
+$webappport = "<%= @web_app_port%>";
+$webappdatabasename = "<%= @web_app_database_name%>";
 
 if($spversion -ne 'Foundation'){
-$mysitemanagedpath = "<%= @mysitemanagedpath %>";
-$mysitehost = "<%= @mysitehost %>";
+$mysitemanagedpath = "<%= @mysite_managed_path %>";
+$mysitehost = "<%= @mysite_host %>";
 }
 ##DefaultSiteCol
-$siteUrl = "<%= @siteurl%>";
-$sitecolname = "<%= @sitecolname%>";
-$sitecoltemplate = "<%= @sitecoltemplate%>";
-$sitecoltime24 = "<%= @sitecoltime24%>";
-$sitecollcid = "<%= @sitecollcid%>";
-$sitecollocale = "<%= @sitecollocale%>";
-$sitecolowner = "<%= @sitecolowner%>";
+$siteUrl = "<%= @site_url%>";
+$sitecolname = "<%= @site_col_name%>";
+$sitecoltemplate = "<%= @site_col_template%>";
+$sitecoltime24 = "<%= @site_col_time24%>";
+$sitecollcid = "<%= @site_col_lcid%>";
+$sitecollocale = "<%= @site_col_locale%>";
+$sitecolowner = "<%= @site_col_owner%>";
 
 ### Part get password if not specified
 
@@ -228,52 +239,54 @@ $xml.Configuration.WebApplications.WebApplication.Get(0).SiteCollections.SiteCol
 #$xml.Configuration.ServiceApps.BusinessDataConnectivity.Database.DBServer = $dbserver;
 
 if($spversion -eq 'Foundation'){
-	$xml.Configuration.ServiceApps.EnterpriseSearchService.Provision = "false";
-	$xml.Configuration.ServiceApps.WorkManagementService.Provision = "false";
-	$xml.Configuration.WebApplications.RemoveChild($xml.Configuration.WebApplications.WebApplication.Get(1))
-	$xml.Configuration.Farm.ManagedAccounts.RemoveChild($xml.Configuration.Farm.ManagedAccounts.ManagedAccount.Get(3))
-}elseif($spversion -eq 'Standard' -or $spversion -eq 'Enterprise'){
-$xml.Configuration.ServiceApps.ManagedMetadataServiceApp.Provision = $computername;
-$xml.Configuration.ServiceApps.EnterpriseSearchService.Provision = $computername;
-$xml.Configuration.ServiceApps.UserProfileServiceApp.Provision = $computername;
-	$xml.Configuration.ServiceApps.WorkManagementService.Provision = $computername;
-$xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccount = $spsyncaccount;
-$xml.Configuration.ServiceApps.UserProfileServiceApp.MySiteHostLocation = $mysitehost;
-$xml.Configuration.ServiceApps.UserProfileServiceApp.MySiteManagedPath = $mysitemanagedpath;
+    $xml.Configuration.ServiceApps.EnterpriseSearchService.Provision = "false";
+    $xml.Configuration.ServiceApps.WorkManagementService.Provision = "false";
+    $xml.Configuration.WebApplications.RemoveChild($xml.Configuration.WebApplications.WebApplication.Get(1))
+    $xml.Configuration.Farm.ManagedAccounts.RemoveChild($xml.Configuration.Farm.ManagedAccounts.ManagedAccount.Get(3))
+} elseif ($spversion -eq 'Standard' -or $spversion -eq 'Enterprise'){
+    $xml.Configuration.ServiceApps.ManagedMetadataServiceApp.Provision = $computername;
+    $xml.Configuration.ServiceApps.EnterpriseSearchService.Provision = $computername;
+    $xml.Configuration.ServiceApps.UserProfileServiceApp.Provision = $computername;
+    $xml.Configuration.ServiceApps.WorkManagementService.Provision = $computername;
+    $xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccount = $spsyncaccount;
+    $xml.Configuration.ServiceApps.UserProfileServiceApp.MySiteHostLocation = $mysitehost;
+    $xml.Configuration.ServiceApps.UserProfileServiceApp.MySiteManagedPath = $mysitemanagedpath;
 
-foreach($webapp in $xml.Configuration.WebApplications.WebApplication){
-if($webapp.type -eq "MySiteHost"){
-$webapp.url = $mysitehost;
-$webapp.Database.DBServer = $dbserver;
-$webapp.ManagedPaths.ManagedPath.relativeUrl = $mysitemanagedpath;
-$webapp.SiteCollections.SiteCollection.siteUrl = $mysitehost;
-$webapp.SiteCollections.SiteCollection.SearchUrl = $mysitehost + "/search";
-}
-}
+    foreach($webapp in $xml.Configuration.WebApplications.WebApplication){
+        if($webapp.type -eq "MySiteHost"){
+            $webapp.url = $mysitehost;
+            $webapp.Database.DBServer = $dbserver;
+            $webapp.ManagedPaths.ManagedPath.relativeUrl = $mysitemanagedpath;
+            $webapp.SiteCollections.SiteCollection.siteUrl = $mysitehost;
+            $webapp.SiteCollections.SiteCollection.SearchUrl = $mysitehost + "/search";
+        }
+    }
 
-if($spsyncpassword -eq $null -or $spsyncpassword -eq ""){
-$xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccountPassword = Get-Password -account $spsyncaccount -userxml $userxml;
-}else{$xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccountPassword = $spsyncpassword;}
+    if($spsyncpassword -eq $null -or $spsyncpassword -eq ""){
+        $xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccountPassword = Get-Password -account $spsyncaccount -userxml $userxml;
+    } else {
+        $xml.Configuration.ServiceApps.UserProfileServiceApp.SyncConnectionAccountPassword = $spsyncpassword;
+    }
 
-$xml.Configuration.ServiceApps.StateService.Provision = $computername;
-$xml.Configuration.ServiceApps.SPUsageService.Provision = $computername;
-$xml.Configuration.ServiceApps.MachineTranslationService.Provision = $computername;
-$xml.Configuration.ServiceApps.SecureStoreService.Provision = $computername;
-$xml.Configuration.ServiceApps.AppManagementService.Provision = $computername;
-$xml.Configuration.ServiceApps.SubscriptionSettingsService.Provision = $computername;
-$xml.Configuration.ServiceApps.BusinessDataConnectivity.Provision = $computername;
+    $xml.Configuration.ServiceApps.StateService.Provision = $computername;
+    $xml.Configuration.ServiceApps.SPUsageService.Provision = $computername;
+    $xml.Configuration.ServiceApps.MachineTranslationService.Provision = $computername;
+    $xml.Configuration.ServiceApps.SecureStoreService.Provision = $computername;
+    $xml.Configuration.ServiceApps.AppManagementService.Provision = $computername;
+    $xml.Configuration.ServiceApps.SubscriptionSettingsService.Provision = $computername;
+    $xml.Configuration.ServiceApps.BusinessDataConnectivity.Provision = $computername;
 
-if($spversion -eq 'Enterprise'){
-if($spexcelaccount -ne "" -or $spexcelaccount -ne $null){
-	$xml.Configuration.EnterpriseServiceApps.ExcelServices.Provision = "true";
-	$xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDUser = $spexcelaccount;
-	if($spexcelpassword -eq $null -or $spexcelpassword -eq ""){
-	  $xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDPassword = Get-Password -account $spexcelaccount -userxml $userxml;
-	}else{
-	  $xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDPassword = $spexcelpassword;
-	}
-}
-}
+    if($spversion -eq 'Enterprise'){
+        if($spexcelaccount -ne "" -or $spexcelaccount -ne $null){
+            $xml.Configuration.EnterpriseServiceApps.ExcelServices.Provision = "true";
+            $xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDUser = $spexcelaccount;
+            if($spexcelpassword -eq $null -or $spexcelpassword -eq ""){
+              $xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDPassword = Get-Password -account $spexcelaccount -userxml $userxml;
+            }else{
+              $xml.Configuration.EnterpriseServiceApps.ExcelServices.UnattendedIDPassword = $spexcelpassword;
+            }
+        }
+    }
 }
 ##switch user for crawl
 $xml.Configuration.ServiceApps.EnterpriseSearchService.EnterpriseSearchServiceApplications.EnterpriseSearchServiceApplication.ContentAccessAccount = $spcrawlaccount;
