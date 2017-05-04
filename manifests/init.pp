@@ -30,229 +30,201 @@
 # === Authors
 #
 # Jerome RIVIERE <www.jerome-riviere.re>
+# John Puskar https://github.com/jpuskar
 #
 # === Copyright
 #
 # Copyright 2014, unless otherwise noted.
 #
-class windows_sharepoint 
-(
+class windows_sharepoint (
   ## Prep SP
-  $basepath          = 'C:\\',
-  $languagepackspath = '',
-  $updatespath       = '',
-  $sppath            = '',
-  $spversion         = 'Foundation',
+  $base_path                                     = 'C:',
+  $language_packs_path                           = undef,
+  $updates_path                                  = undef,
+  $sp_path                                       = 'c:/install_files/sharepoint.7z',
+  $sp_version                                    = 'Foundation',
   
   ## XML input file
-  $xmlinputfile                              = '',               # if specify all other options will be desactivated
-  $userxml                                   = 'C:\users.xml',
+  $user_xml                                      = undef, #'C:/users.xml',
   ## Install parameters
-  $key                                       = '',
-  $offline                                   = false,
-  $autoadminlogon                            = true,
-  $setup_account_password                    = '',
-  $setup_account_username                    = 'Administrator',
-  $disableloopbackcheck                      = true,
-  $disableunusedservices                     = true,
-  $disableieenhancedsecurity                 = true,
-  $certificaterevocationlistcheck            = true,
+  $key                                           = undef,
+  $offline                                       = false,
+  $auto_admin_logon                              = false,
+  $setup_account_username                        = 'Administrator',
+  $disable_loopback_check                        = true,
+  $disable_unused_services                       = true,
+  $disable_ie_enhanced_security                  = true,
+  $certificate_revocation_list_check             = true,
   
-  ## Farm parameters
-  $passphrase                                = '',
-  $spfarmaccount                             = '',
-  $spfarmpassword                            = '',                 # if empty will check XML File
+  $central_admin_provision                       = 'localhost',
+  $central_admin_database                        = 'Content_Admin',
+  $central_admin_port                            = 4242,
+  $central_admin_ssl                             = false,
+
+  $db_server                                     = 'SQL_ALIAS',
+  $db_alias                                      = false,
+  $db_alias_port                                 = '1433',
+  $db_alias_instance                             = 'MSSQLSERVER',
   
-  $centraladminprovision                     = 'localhost',        #where to provision
-  $centraladmindatabase                      = 'Content_Admin',
-  $centraladminport                          = 4242,
-  $centraladminssl                           = false,
-  
-  $dbserver                                  = 'SQL_ALIAS',        # name of alias, or name of SQL Server
-  $dbalias                                   = true,
-  $dbaliasport                               = '',                 # if empty default will used
-  $dbaliasinstance                           = '',                 # name of SQL Server
-  
-  $dbprefix                                  = 'SP2013',           # Prefix for DB
-  $dbuser                                    = '',
-  $dbpassword                                = '',
-  $configdb                                  = 'ConfigDB',
+  $db_prefix                                     = 'SP2013',
+  $db_user                                       = undef,
+  $db_password                                   = undef,
+  $config_db                                     = 'ConfigDB',
   
   ## Services part
-  $sanboxedcodeservicestart                  = false,
-  $claimstowindowstokenserverstart           = false,
-  $claimstowindowstokenserverupdateaccount   = false,
+  $sanboxed_code_service_start                   = false,
+  $claims_to_windows_token_server_start          = false,
+  $claims_to_windows_token_server_update_account = false,
   
-  $smtpinstall                               = false,
-  $smtpoutgoingemailconfigure                = false,
-  $smtpoutgoingserver                        = '',
-  $smtpoutgoingemailaddress                  = '',
-  $smtpoutgoingreplytoemail                  = '',
+  $smtp_install                                  = false,
+  $smtp_outgoing_email_configure                 = false,
+  $smtp_outgoing_server                          = undef,
+  $smtp_outgoing_email_address                   = undef,
+  $smtp_outgoing_reply_to_email                  = undef,
 
-  $incomingemailstart                        = 'localhost', 
-  $distributedcachestart                     = 'localhost', 
-  $workflowtimerstart                        = 'localhost', 
-  $foundationwebapplicationstart             = 'localhost',
+  $incoming_email_start                          = 'localhost',
+  $distributed_cache_start                       = 'localhost',
+  $workflow_timer_start                          = 'localhost',
+  $foundation_web_application_start              = 'localhost',
 
-  $spapppoolaccount                          = '',
-  $spapppoolpassword                         = '',                 # if empty will check XML File
-  $spservicesaccount                         = '',
-  $spservicespassword                        = '',                 # if empty will check XML File
-  $spsearchaccount                           = '',
-  $spsearchpassword                          = '',                 # if empty will check XML File
-  $spsuperreaderaccount                      = '',
-  $spsuperuseraccount                        = '',
-  $spcrawlaccount                            = '',
-  $spcrawlpassword                           = '',                 # if empty will check XML File
-  $spsyncaccount                             = '',
-  $spsyncpassword                            = '',                 # if empty will check XML File
-  $spusrprfaccount                           = '',
-  $spusrprfpassword                          = '',                # if empty will check XML File
-  $spexcelaccount                            = '',
-  $spexcelpassword                           = '',                # if empty will check XML File
+  $sp_app_pool_account                           = 'svc_sp_app_pool',
+  $sp_app_pool_password                          = 'vagrant',
+  $sp_services_account                           = 'svc_sp_services',
+  $sp_services_password                          = 'vagrant',
+  $sp_search_account                             = 'svc_sp_search',
+  $sp_search_password                            = 'vagrant',
+  $sp_super_reader_account                       = 'svc_sp_sreader',
+  $sp_super_user_account                         = 'svc_sp_susr',
+  $sp_crawl_account                              = 'svc_sp_crawl',
+  $sp_crawl_password                             = 'vagrant',
+  $sp_sync_account                               = 'svc_sp_sync',
+  $sp_sync_password                              = 'vagrant',
+  $sp_usr_prf_account                            = 'svc_sp_usr_prf',
+  $sp_usr_prf_password                           = 'vagrant',
+  $sp_excel_account                              = 'svc_sp_excel',
+  $sp_excel_password                             = 'vagrant',
 
   ## Log
-  $logcompress                               = true,
-  $iislogspath                               = 'C:\SPLOGS\IIS',
-  $ulslogspath                               = 'C:\LOGS\ULS',
-  $usagelogspath                             = 'C:\LOGS\USAGE',
+  $log_compress                                  = true,
+  $iis_logs_path                                 = 'C:\SPLOGS\IIS',
+  $uls_logs_path                                 = 'C:\LOGS\ULS',
+  $usage_logs_path                               = 'C:\LOGS\USAGE',
   
   ###DefaultWebApp
-  $removedefaultwebapp                       = false,              # if true the default web app will be removed.
-  $webappurl                                 = 'https://localhost',
-  $applicationPool                           = 'SharePointDefault_App_Pool',
-  $webappname                                = 'SharePoint Default Web App',
-  $webappport                                = 443,
-  $webappdatabasename                        = 'Content_SharePointDefault',
+  $remove_default_web_app                        = false,
+  $web_app_url                                   = "https://${::fqdn}",
+  $application_pool                              = 'SharePointDefault_App_Pool',
+  $web_app_name                                  = 'SharePoint Default Web App',
+  $web_app_port                                  = 443,
+  $web_app_database_name                         = 'Content_SharePointDefault',
+
+  ##Install
+  $autospinstaller_pkg_ensure                    = 'latest',
+  $autospinstaller_pkg_name                      = 'autospinstaller',
+  $autospinstaller_pkg_source                    = undef,
+  $autospinstaller_pkg_provider                  = 'chocolatey',
+  $setacl_pkg_ensure                             = 'latest',
+  $setacl_pkg_name                               = 'setacl',
+  $setacl_pkg_source                             = undef,
+  $setacl_pkg_provider                           = 'chocolatey',
+  $setacl_install_dir                            = 'C:/Program Files/setacl'
   
   ##DefaultSiteCol
-  $siteurl                                   = 'https://localhost',
-  $sitecolname                               = 'WebSite',
-  $sitecoltemplate                           = 'STS#0',
-  $sitecoltime24                             = true,
-  $sitecollcid                               = 1033,
-  $sitecollocale                             = 'en-us',
-  $sitecolowner                              = '',  
+  $site_url                                      = 'https://localhost',
+  $site_col_name                                 = 'WebSite',
+  $site_col_template                             = 'STS#0',
+  $site_col_time24                               = true,
+  $site_col_lcid                                 = 1033,
+  $site_col_locale                               = 'en-us',
+  $site_col_owner                                = 'Administrator',
   
-  $mysitehost                                = hiera('windows_sharepoint::mysitehost', ''),
-  $mysitemanagedpath                         = hiera('windows_sharepoint::mysitemanagedpath', 'personal'),
-  
-  $computername                              = $::hostname,        #will take computername from facter
+  $mysite_host                                   = undef,
+  $mysite_managed_path                           = 'personal',
+
+  $computer_name                                 = $::hostname,
+
+  # Mandatory
+  $setup_account_password,
+  $pass_phrase,
+  $sp_farm_account,
+  $sp_farm_password,
 ){
-  class{"windows_sharepoint::prepsp":
-    basepath          => $basepath,
-    languagepackspath => $languagepackspath,
-    updatespath       => $updatespath,
-    sppath            => $sppath,
-    spversion         => $spversion,
+
+  # TODO: validate base_path has no last trailing slash.
+  validate_re(
+    $sp_version,
+    '^(Foundation|Standard|Enterprise)$',
+    'valid values for mode are \'Foundation\' or \'Standard\' or \'Enterprise\''
+  )
+
+  if(empty($sp_path)){
+    fail('sp_path cannot be empty.')
   }
 
-  class{"windows_sharepoint::stage_bin":
-    basepath          => $basepath,
-    languagepackspath => $languagepackspath,
-    updatespath       => $updatespath,
-    sppath            => $sppath,
-    spversion         => $spversion,
+    $base_accounts_to_check = [
+    $sp_farm_account,
+    $sp_app_pool_account,
+    $sp_services_account,
+    $sp_search_account,
+    $sp_crawl_account,
+    $sp_super_reader_account,
+    $sp_super_user_account,
+  ]
+
+  case $sp_version {
+    'Foundation': {$other_accounts_to_check = []}
+    'Standard':   {$other_accounts_to_check = [$sp_sync_account, $sp_usr_prf_account]}
+    'Enterprise': {$other_accounts_to_check = [$sp_sync_account, $sp_usr_prf_account, $sp_excel_account]}
   }
 
-  class{"windows_sharepoint::install":
-  ## XML input file
-    xmlinputfile                              => $xmlinputfile,
-    basepath                                  => $basepath,
-    userxml                                   => $userxml,
-  ## Install parameters
-    key                                       => $key,
-    offline                                   => $offline,
-    autoadminlogon                            => $autoadminlogon,
-    setup_account_password                    => $setup_account_password,
-    setup_account_username                    => $setup_account_username,
-    disableloopbackcheck                      => $disableloopbackcheck,
-    disableunusedservices                     => $disableunusedservices,
-    disableieenhancedsecurity                 => $disableieenhancedsecurity,
-    certificaterevocationlistcheck            => $certificaterevocationlistcheck,
-
-  ## Farm parameters
-    passphrase                                => $passphrase,
-    spfarmaccount                             => $spfarmaccount,
-    spfarmpassword                            => $spfarmpassword,
-
-    centraladminprovision                     => $centraladminprovision,
-    centraladmindatabase                      => $centraladmindatabase,
-    centraladminport                          => $centraladminport,
-    centraladminssl                           => $centraladminssl,
-
-    dbserver                                  => $dbserver,
-    dbalias                                   => $dbalias,
-    dbaliasport                               => $dbaliasport,
-    dbaliasinstance                           => $dbaliasinstance,
-
-    dbprefix                                  => $dbprefix,
-    dbuser                                    => $dbuser,
-    dbpassword                                => $dbpassword,
-    configdb                                  => $configdb,
-
-  ## Services part
-    sanboxedcodeservicestart                  => $sanboxedcodeservicestart,
-    claimstowindowstokenserverstart           => $claimstowindowstokenserverstart,
-    claimstowindowstokenserverupdateaccount   => $claimstowindowstokenserverupdateaccount,
-
-    smtpinstall                               => $smtpinstall,
-    smtpoutgoingemailconfigure                => $smtpoutgoingemailconfigure,
-    smtpoutgoingserver                        => $smtpoutgoingserver,
-    smtpoutgoingemailaddress                  => $smtpoutgoingemailaddress,
-    smtpoutgoingreplytoemail                  => $smtpoutgoingreplytoemail,
-
-    incomingemailstart                        => $incomingemailstart, 
-    distributedcachestart                     => $distributedcachestart, 
-    workflowtimerstart                        => $workflowtimerstart, 
-    foundationwebapplicationstart             => $foundationwebapplicationstart,
-
-    spapppoolaccount                          => $spapppoolaccount,
-    spapppoolpassword                         => $spapppoolpassword,
-    spservicesaccount                         => $spservicesaccount,
-    spservicespassword                        => $spservicespassword,
-    spsearchaccount                           => $spsearchaccount,
-    spsearchpassword                          => $spsearchpassword,
-    spsuperreaderaccount                      => $spsuperreaderaccount,
-    spsuperuseraccount                        => $spsuperuseraccount,
-    spcrawlaccount                            => $spcrawlaccount,
-    spcrawlpassword                           => $spcrawlpassword,
-    spsyncaccount                             => $spsyncaccount,
-    spsyncpassword                            => $spsyncpassword,
-    spusrprfaccount                           => $spusrprfaccount,
-    spusrprfpassword                          => $spusrprfpassword,
-    spexcelaccount                            => $spexcelaccount,
-    spexcelpassword                           => $spexcelpassword,
-
-  ## Log
-    logcompress                               => $logcompress,
-    iislogspath                               => $iislogspath,
-    ulslogspath                               => $ulslogspath,
-    usagelogspath                             => $usagelogspath,
-
-  ###DefaultWebApp
-    removedefaultwebapp                       => $removedefaultwebapp,
-    webappurl                                 => $webappurl,
-    applicationPool                           => $applicationPool,
-    webappname                                => $webappname,
-    webappport                                => $webappport,
-    webappdatabasename                        => $webappdatabasename,
-
-  ##DefaultSiteCol
-    siteurl                                   => $siteurl,
-    sitecolname                               => $sitecolname,
-    sitecoltemplate                           => $sitecoltemplate,
-    sitecoltime24                             => $sitecoltime24,
-    sitecollcid                               => $sitecollcid,
-    sitecollocale                             => $sitecollocale,
-    sitecolowner                              => $sitecolowner,
-
-    spversion                                 => $spversion,
-    computername                              => $computername,
+  $all_accounts_to_check = concat($base_accounts_to_check, $other_accounts_to_check)
+  $accounts_are_specified = reduce($all_accounts_to_check, true) |$memo, $entry| {
+      $memo and ($entry =~ String[1])
   }
+  if(!$accounts_are_specified) {
+    fail('Some required accounts are not specified.')
+  }
+
+  if($auto_admin_logon and empty($setup_account_password)){
+    fail('If auto_admin_logon is set to true, then setup_account_password must not be empty.')
+  }
+
+  if(empty($db_server)){
+    fail('db_server must not be empty.')
+  }
+
+  if($db_alias == true and empty($db_alias_instance)){
+    fail('If db_alias is true, then db_alias_instance must not be empty.')
+  }
+  if(empty($site_col_owner)){
+    fail('site_col_owner cannot be empty')
+  }
+
+  if($sp_version != "Foundation" and empty($key)){
+    fail('Key (serial number) cannot be empty unless sp_version is Foundation.')
+  }
+
+  if(empty($pass_phrase)){
+    fail('Pass_phrase cannot be empty.')
+  }
+
+  if(
+    $central_admin_port < 1023
+    or $central_admin_port > 32767
+    or $central_admin_port == 443
+    or $central_admin_database == 80
+  ) {
+    fail('central_admin_port must be > 1023, < 32767, and != [443, 80].')
+  }
+
+  class{"windows_sharepoint::prepsp":}
+  class{"windows_sharepoint::stage_bin":}
+  class{"windows_sharepoint::install":}
+
   anchor{'windows_sharepoint::begin':} ->
   Class['windows_sharepoint::prepsp'] ->
   Class['windows_sharepoint::stage_bin'] ->
   Class['windows_sharepoint::install'] ->
   anchor{'windows_sharepoint::end':}
+
 }

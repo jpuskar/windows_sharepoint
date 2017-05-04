@@ -1,400 +1,423 @@
-# == Class: windows_sharepoint::install
-class windows_sharepoint::install 
-(
-  $ensure                                  = present,
+# == Class: windows_sharepoint
+#
+class windows_sharepoint::install (
+  $ensure  = present,
   ## XML input file
-  $xmlinputfile                            = hiera('windows_sharepoint::xmlinputfile', ''),                      # if specify all other options will be desactivated
-  $basepath                                = hiera('windows_sharepoint::basepath', 'C:\\'),
-  $userxml                                 = hiera('windows_sharepoint::userxml', 'C:\users.xml'),
+  $base_path                                     = $windows_sharepoint::base_path,
+  $user_xml                                      = $windows_sharepoint::user_xml,
   ## Install parameters
-  $key                                     = hiera('windows_sharepoint::key', ''),
-  $offline                                 = hiera('windows_sharepoint::offline', false),
-  $autoadminlogon                          = hiera('windows_sharepoint::autoadminlogon', true),
-  $setup_account_username                  = hiera('windows_sharepoint::setup_account_username', ''),
-  $setup_account_password                  = hiera('windows_sharepoint::setup_account_password', ''),
-  $disableloopbackcheck                    = hiera('windows_sharepoint::disableloopbackcheck', true),
-  $disableunusedservices                   = hiera('windows_sharepoint::disableunusedservices', true),
-  $disableieenhancedsecurity               = hiera('windows_sharepoint::disableieenhancedsecurity', true),
-  $certificaterevocationlistcheck          = hiera('windows_sharepoint::certificaterevocationlistcheck', true),
+  $key                                           = $windows_sharepoint::key,
+  $offline                                       = $windows_sharepoint::offline,
+  $auto_admin_logon                              = $windows_sharepoint::auto_admin_logon,
+  $setup_account_username                        = $windows_sharepoint::setup_account_username,
+  $setup_account_password                        = $windows_sharepoint::setup_account_password,
+  $disable_loopback_check                        = $windows_sharepoint::disable_loopback_check,
+  $disable_unused_services                       = $windows_sharepoint::disable_unused_services,
+  $disable_ie_enhanced_security                  = $windows_sharepoint::disable_ie_enhanced_security,
+  $certificate_revocation_list_check             = $windows_sharepoint::certificate_revocation_list_check,
   
   ## Farm parameters
-  $passphrase                              = hiera('windows_sharepoint::passphrase', ''),
-  $spfarmaccount                           = hiera('windows_sharepoint::spfarmaccount', ''),
-  $spfarmpassword                          = hiera('windows_sharepoint::spfarmpassword', ''),                    # if empty will check XML File
+  $pass_phrase                                   = $windows_sharepoint::pass_phrase,
+  $sp_farm_account                               = $windows_sharepoint::sp_farm_account,
+  $sp_farm_password                              = $windows_sharepoint::sp_farm_password,
   
-  $centraladminprovision                   = hiera('windows_sharepoint::centraladminprovision', 'localhost'),    #where to provision
-  $centraladmindatabase                    = hiera('windows_sharepoint::centraladmindatabase', 'Content_Admin'),
-  $centraladminport                        = hiera('windows_sharepoint::centraladminport', 4242),
-  $centraladminssl                         = hiera('windows_sharepoint::centraladminssl', false),
+  $central_admin_provision                       = $windows_sharepoint::central_admin_provision,
+  $central_admin_database                        = $windows_sharepoint::central_admin_database,
+  $central_admin_port                            = $windows_sharepoint::central_admin_port,
+  $central_admin_ssl                             = $windows_sharepoint::central_admin_ssl,
   
-  $dbserver                                = hiera('windows_sharepoint::dbserver', 'localhost'),                 # name of alias, or name of SQL Server
-  $dbalias                                 = hiera('windows_sharepoint::dbalias', false),
-  $dbaliasport                             = hiera('windows_sharepoint::dbaliasport', 1433),                     # if empty default will used
-  $dbaliasinstance                         = hiera('windows_sharepoint::dbaliasinstance', 'MSSQLSERVER'),        # name of SQL Server
+  String[1]$db_server                            = $windows_sharepoint::db_server,
+  $db_alias                                      = $windows_sharepoint::db_alias,
+  $db_alias_port                                 = $windows_sharepoint::db_alias_port,
+  $db_alias_instance                             = $windows_sharepoint::db_alias_instance,
   
-  $dbprefix                                = hiera('windows_sharepoint::dbprefix', 'SP2013'),                    # Prefix for DB
-  $dbuser                                  = hiera('windows_sharepoint::dbuser', ''),
-  $dbpassword                              = hiera('windows_sharepoint::dbpassword', ''),
-  $configdb                                = hiera('windows_sharepoint::configdb', 'ConfigDB'),
+  $db_prefix                                     = $windows_sharepoint::db_prefix,
+  $db_user                                       = $windows_sharepoint::db_user,
+  $db_password                                   = $windows_sharepoint::db_password,
+  $config_db                                     = $windows_sharepoint::config_db,
   
   ## Services part
-  $sanboxedcodeservicestart                = hiera('windows_sharepoint::sanboxedcodeservicestart', false),
-  $claimstowindowstokenserverstart         = hiera('windows_sharepoint::claimstowindowstokenserverstart', false),
-  $claimstowindowstokenserverupdateaccount = hiera('windows_sharepoint::claimstowindowstokenserverupdateaccount', false),
+  $sanboxed_code_service_start                   = $windows_sharepoint::sanboxed_code_service_start,
+  $claims_to_windows_token_server_start          = $windows_sharepoint::claims_to_windows_token_server_start,
+  $claims_to_windows_token_server_update_account = $windows_sharepoint::claims_to_windows_token_server_update_account,
   
-  $smtpinstall                             = hiera('windows_sharepoint::smtpinstall', false),
-  $smtpoutgoingemailconfigure              = hiera('windows_sharepoint::smtpoutgoingemailconfigure', false),
-  $smtpoutgoingserver                      = hiera('windows_sharepoint::smtpoutgoingserver', ''),
-  $smtpoutgoingemailaddress                = hiera('windows_sharepoint::smtpoutgoingemailaddress', ''),
-  $smtpoutgoingreplytoemail                = hiera('windows_sharepoint::smtpoutgoingreplytoemail', ''),
+  $smtp_install                                  = $windows_sharepoint::smtp_install,
+  $smtp_outgoing_email_configure                 = $windows_sharepoint::smtp_outgoing_email_configure,
+  $smtp_outgoing_server                          = $windows_sharepoint::smtp_outgoing_server,
+  $smtp_outgoing_email_address                   = $windows_sharepoint::smtp_outgoing_email_address,
+  $smtp_outgoing_reply_to_email                  = $windows_sharepoint::smtp_outgoing_reply_to_email,
 
-  $incomingemailstart                      = hiera('windows_sharepoint::incomingemailstart', 'localhost'),
-  $distributedcachestart                   = hiera('windows_sharepoint::distributedcachestart', 'localhost'),
-  $workflowtimerstart                      = hiera('windows_sharepoint::workflowtimerstart', 'localhost'),
-  $foundationwebapplicationstart           = hiera('windows_sharepoint::foundationwebapplicationstart', 'localhost'),
+  $incoming_email_start                          = $windows_sharepoint::incoming_email_start,
+  $distributed_cache_start                       = $windows_sharepoint::distributed_cache_start,
+  $workflow_timer_start                          = $windows_sharepoint::workflow_timer_start,
+  $foundation_web_application_start              = $windows_sharepoint::foundation_web_application_start,
 
-  $spapppoolaccount                        = hiera('windows_sharepoint::spapppoolaccount', ''),
-  $spapppoolpassword                       = hiera('windows_sharepoint::spapppoolpassword', ''),                 # if empty will check XML File
-  $spservicesaccount                       = hiera('windows_sharepoint::spservicesaccount', ''),
-  $spservicespassword                      = hiera('windows_sharepoint::spservicespassword', ''),                # if empty will check XML File
-  $spsearchaccount                         = hiera('windows_sharepoint::spsearchaccount', ''),
-  $spsearchpassword                        = hiera('windows_sharepoint::spsearchpassword', ''),                  # if empty will check XML File
-  $spsuperreaderaccount                    = hiera('windows_sharepoint::spsuperreaderaccount', ''),
-  $spsuperuseraccount                      = hiera('windows_sharepoint::spsuperuseraccount', ''),
-  $spcrawlaccount                          = hiera('windows_sharepoint::spcrawlaccount', ''),
-  $spcrawlpassword                         = hiera('windows_sharepoint::spcrawlpassword', ''),                   # if empty will check XML File
-  $spsyncaccount                           = hiera('windows_sharepoint::spsyncaccount', ''),
-  $spsyncpassword                          = hiera('windows_sharepoint::spsyncpassword', ''),                    # if empty will check XML File
-  $spusrprfaccount                         = hiera('windows_sharepoint::spusrprfaccount', ''),
-  $spusrprfpassword                        = hiera('windows_sharepoint::spusrprfpassword', ''),                  # if empty will check XML File
-  $spexcelaccount                          = hiera('windows_sharepoint::spexcelaccount', ''),
-  $spexcelpassword                         = hiera('windows_sharepoint::spexcelpassword', ''),                   # if empty will check XML File
+  $sp_app_pool_account                           = $windows_sharepoint::sp_app_pool_account,
+  $sp_app_pool_password                          = $windows_sharepoint::sp_app_pool_password,
+  $sp_services_account                           = $windows_sharepoint::sp_services_account,
+  $sp_services_password                          = $windows_sharepoint::sp_services_password,
+  $sp_search_account                             = $windows_sharepoint::sp_search_account,
+  $sp_search_password                            = $windows_sharepoint::sp_search_password,
+  $sp_super_reader_account                       = $windows_sharepoint::sp_super_reader_account,
+  $sp_super_user_account                         = $windows_sharepoint::sp_super_user_account,
+  $sp_crawl_account                              = $windows_sharepoint::sp_crawl_account,
+  $sp_crawl_password                             = $windows_sharepoint::sp_crawl_password,
+  $sp_sync_account                               = $windows_sharepoint::sp_sync_account,
+  $sp_sync_password                              = $windows_sharepoint::sp_sync_password,
+  $sp_usr_prf_account                            = $windows_sharepoint::sp_usr_prf_account,
+  $sp_usr_prf_password                           = $windows_sharepoint::sp_usr_prf_password,
+  $sp_excel_account                              = $windows_sharepoint::sp_excel_account,
+  $sp_excel_password                             = $windows_sharepoint::sp_excel_password,
 
   ## Log
-  $logcompress                             = hiera('windows_sharepoint::logcompress', true),
-  $iislogspath                             = hiera('windows_sharepoint::iislogspath', 'C:\SPLOGS\IIS'),
-  $ulslogspath                             = hiera('windows_sharepoint::ulslogspath', 'C:\SPLOGS\ULS'),
-  $usagelogspath                           = hiera('windows_sharepoint::usagelogspath', 'C:\SPLOGS\USAGE'),
+  $log_compress                                  = $windows_sharepoint::log_compress,
+  $iis_logs_path                                 = $windows_sharepoint::iis_logs_path,
+  $uls_logs_path                                 = $windows_sharepoint::uls_logs_path,
+  $usage_log_spath                               = $windows_sharepoint::usage_logs_path,
   
   ###DefaultWebApp
-  $removedefaultwebapp                     = hiera('windows_sharepoint::removedefaultwebapp', false),            # if true the default web app will be removed.
-  $webappurl                               = hiera('windows_sharepoint::webappurl', 'https://localhost'),
-  $applicationPool                         = hiera('windows_sharepoint::applicationPool', 'SharePointDefault_App_Pool'),
-  $webappname                              = hiera('windows_sharepoint::webappname', 'SharePoint Default Web App'),
-  $webappport                              = hiera('windows_sharepoint::webappport', 443),
-  $webappdatabasename                      = hiera('windows_sharepoint::webappdatabasename', 'Content_SharePointDefault'),
+  $remove_default_web_app                        = $windows_sharepoint::remove_default_web_app,
+  $web_app_url                                   = $windows_sharepoint::web_app_url,
+  $application_pool                              = $windows_sharepoint::application_pool,
+  $web_app_name                                  = $windows_sharepoint::web_app_name,
+  $web_app_port                                  = $windows_sharepoint::web_app_port,
+  $web_app_database_name                         = $windows_sharepoint::web_app_database_name,
   
   ##DefaultSiteCol
-  $siteurl                                 = hiera('windows_sharepoint::siteurl', 'https://localhost'),
-  $sitecolname                             = hiera('windows_sharepoint::sitecolname', 'WebSite'),
-  $sitecoltemplate                         = hiera('windows_sharepoint::sitecoltemplate', 'STS#0'),
-  $sitecoltime24                           = hiera('windows_sharepoint::sitecoltime24', true),
-  $sitecollcid                             = hiera('windows_sharepoint::sitecollcid', 1033),
-  $sitecollocale                           = hiera('windows_sharepoint::sitecollocale', 'en-us'),
-  $sitecolowner                            = hiera('windows_sharepoint::sitecolowner', ''),
+  $site_url                                      = $windows_sharepoint::site_url,
+  $site_col_name                                 = $windows_sharepoint::site_col_name,
+  $site_col_template                             = $windows_sharepoint::site_col_template,
+  $site_col_time24                               = $windows_sharepoint::site_col_time24,
+  $site_col_lcid                                 = $windows_sharepoint::site_col_lcid,
+  $site_col_locale                               = $windows_sharepoint::site_col_locale,
+  $site_col_owner                                = $windows_sharepoint::site_col_owner,
   
-  $mysitehost                              = hiera('windows_sharepoint::mysitehost', ''),
-  $mysitemanagedpath                       = hiera('windows_sharepoint::mysitemanagedpath', 'personal'),
+  $mysite_host                                   = $windows_sharepoint::mysite_host,
+  $mysite_managed_path                           = $windows_sharepoint::mysite_managed_path,
   
-  $spversion                               = hiera('windows_sharepoint::spversion', 'Foundation'),
-  $computername                            = hiera('windows_sharepoint::computername', $::hostname),
-)
-{
-  if(!empty($xmlinputfile)){ # Install with xml file
-    ## need to copy $xmlinputfile to C:\Puppet-SharePoint\AutoSPInstaller
-    fail('not yet implemented')
-  }else{ ## Install without a xml file
-    if($spversion != 'Foundation'){
-      #fail('XML File will be generated only for Foundation version. For others version please fill you AutoSPInstallerInput.xml file')
-      notice("using $spversion")
-    }
-    if((empty($spfarmaccount) or empty($spapppoolaccount) or empty($spservicesaccount) or empty($spsearchaccount) or empty($spcrawlaccount) or empty($spsuperreaderaccount) or empty($spsuperuseraccount)) and $spversion == 'Foundation'){
-       fail('All Accounts need to be specified (spfarmaccount, spapppoolaccount, spservicesaccount, spsearchaccount, spcrawlaccount, spsuperreaderaccount, and spsuperuseraccount).')
-    }
+  $sp_version                                    = $windows_sharepoint::sp_version,
+  $computer_name                                 = $windows_sharepoint::computer_name,
+  $use_invoke_command                            = false,
+) {
 
-    if((empty($spfarmaccount) or empty($spapppoolaccount) or empty($spservicesaccount) or empty($spsearchaccount) or empty($spcrawlaccount) or empty($spsuperreaderaccount) or empty($spsuperuseraccount) or empty($spsyncaccount) or empty($spusrprfaccount)) and $spversion == 'Standard'){
-       fail('All Accounts need to be specified except spexcelaccount.')
-    }
+  file{"${base_path}/Puppet-SharePoint/generatexml.ps1":
+    content => template('windows_sharepoint/autospinstaller.erb'),
+    replace => yes,
+  }
 
-    if((empty($spfarmaccount) or empty($spapppoolaccount) or empty($spservicesaccount) or empty($spsearchaccount) or empty($spcrawlaccount) or empty($spsuperreaderaccount) or empty($spsuperuseraccount) or empty($spsyncaccount) or empty($spusrprfaccount) or empty($spexcelaccount)) and $spversion == 'Enterprise'){
-       fail('All Accounts need to be specified.')
-    }
-
-    if($autoadminlogon == true and empty(setup_account_password)){
-      fail('If autoadminlogin is set to true you need to specify your setup password.')
-    }
-    if(empty($dbserver)){
-      fail('DBServer is mandatory')
-    }
-    if($dbalias == true and empty(dbaliasinstance)){
-      fail('Can\'t set DBalias to true without specifying a dbaliasinstance.')
-    }
-    if(empty($sitecolowner)){
-      fail('sitecolowner can\'t be empty.')
-    }
-    if(empty(key)){
-      fail('A serial number (key) is mandatory.')
-    }
-    if(empty(passphrase)){
-      fail('PassPhrase is empty.')
-    }
-    if($centraladminport < 1023 or $centraladminport > 32767 or $centraladminport == 443 or centraladmindatabase == 80){
-      fail('centraladminport can\'t be set to this value. CentralAdminPort need to be greater than 1023, less than 32767 and not equal to 443 or 80.')
-    }
-
-    file{"$basepath\\Puppet-SharePoint\\generatexml.ps1":
-      content => template('windows_sharepoint/autospinstaller.erb'),
-      replace => yes,
-    }
-
-    # logoutput false so we don't display passwords
-    exec{'generate_xml':
-      provider  => powershell,
-      command   => "\
+  # logoutput false so we don't display passwords
+  exec{'generate_xml':
+    provider  => 'powershell',
+    command   => "\
 \$ErrorActionPreference = 'Stop'; \
-$basepath\\Puppet-SharePoint\\generatexml.ps1",
-      require   => File["$basepath\\Puppet-SharePoint\\generatexml.ps1"],
-      onlyif    => "if ((test-path '${basepath}\\Puppet-SharePoint\\xmlgenerated') -eq \$true){exit 1;}; ",
-      logoutput => false,
-    }
+${base_path}/Puppet-SharePoint/generatexml.ps1",
+    require   => File["${base_path}/Puppet-SharePoint/generatexml.ps1"],
+    onlyif    => "If ((Test-Path '${base_path}/Puppet-SharePoint/xmlgenerated') -eq \$true){Exit 1;}; ",
+    logoutput => false,
+  }
 
-    $reboot_check = " \
-\$ErrorActionPreference = \"Stop\"; \
-\$results = \$false; \
-\$results = test-path \"C:\\windows\\windows_sharepoint_puppet_reboot.txt\"; \
-if (\$results -eq \$true) { \
- exit 0; \
- } else { \
- exit 1; \
-};"
+  $reboot_check = @(REBOOT_CHECK)
+    $ErrorActionPreference = "Stop";
+    $results = $false;
+    $results = Test-Path "C:/windows/windows_sharepoint_puppet_reboot.txt";
+    If ($results -eq $true) { exit 0; } else { exit 1; };
+    | END_REBOOT_CHECK
 
-    # Note: Can't use $ErrorActionPreference = 'Stop' because Puppet will throw
-    #   a Ruby parse error.
-    $cmd_launch_installer = " \
-\$password = ConvertTo-SecureString '${setup_account_password}' -AsPlainText -Force; \
-\$cred= New-Object System.Management.Automation.PSCredential (\"${setup_account_username}\", \$password); \
-\$install_proc = Start-Process \"\$pshome\\powershell.exe\" \
- -Credential \$cred \
- -Wait \
- -WorkingDirectory '${basepath}\\Puppet-SharePoint\\AutoSPInstaller\\' \
- -ArgumentList ' \
-  -ExecutionPolicy Bypass \
-  .\\AutoSPInstallerMain.ps1 \
-  -inputFile \"${basepath}\\Puppet-SharePoint\\AutoSPInstaller\\AutoSPInstallerInput.xml\" \
-  -unattended '\
- -PassThru \
- -RedirectStandardOutput \"C:\\puppet-sharepoint\\install.log\"; \
-if(\$install_proc.exitcode -ne 0) {Throw}; "
+  # Note: Can't use $ErrorActionPreference = 'Stop' because Puppet will throw
+  #   a Ruby parse error.
 
-    $base_check_cmd = " \
-if ((Test-Path C:\\Windows\\windows_sharepoint_puppet_reboot.txt) -eq \$true) { \
- \$skip_checks = \$true; \
-} else { \
- \$skip_checks = \$false; \
- Add-PSSnapin 'Microsoft.SharePoint.PowerShell'; \
- \$snapin = Get-PSSnapin '*SharePoint.PowerShell'; \
- if(\$snapin.count -eq 0) { \
-  \$check_failed = \$true; \
- } else { \
-  \$check_failed = \$false; \
- }
-} ;"
+  $cmd_launch_installer_params = @("END_CMD_LAUNCH_INSTALLER_PARAMS"/$)
+    \$raw_password = "${setup_account_password}";
+    \$username = "${setup_account_username}";
+    \$computer_name = "${::fqdn}";
+    \$base_path = "${base_path}";
+    | END_CMD_LAUNCH_INSTALLER_PARAMS
 
-    $cmd_check_sp_state_service = " \
-if(!\$skip_checks) { \
- \$test_prop = \$null; \
- \$test_prop = Get-SPStateServiceApplication; \
- if(\$test_prop -eq \$null){ \
-   \$check_failed = \$true; \
- } \
-} ;"
+  if $use_invoke_command {
+    $cmd_launch_installer_frag = @(END_CMD_LAUNCH_INSTALLER_FRAG)
+      $ErrorActionPreference = 'Stop';
+      Invoke-Command -ScriptBlock {
+        $exe_pol = Get-ExecutionPolicy;
+        Set-ExecutionPolicy Bypass -Force;
+        Try {
+          C:/Puppet-SharePoint/AutoSPInstaller/AutoSPInstallerMain.ps1 `
+            -inputFile "C:/Puppet-SharePoint/AutoSPInstaller/AutoSPInstallerInput.xml" `
+            -unattended | Out-File "C:/puppet-sharepoint/install.log";
+        } Catch {
+          Set-ExecutionPolicy $exe_pol -Force;
+        }
+      };
+      | END_CMD_LAUNCH_INSTALLER_FRAG
+    $cmd_launch_installer = "${cmd_launch_installer_params}; ${cmd_launch_installer_frag}"
 
-    $cmd_excel_service_check = " \
-if(!\$skip_checks) { \
- \$test_prop = \$null; \
- \$test_prop = Get-SPExcelServiceApplication | ?{ \
-  \$_.DisplayName -Match \"Excel Services \" \
- }; \
-if(\$test_prop -eq \$null) { \
-  \$check_failed = \$true; \
- }\
-} ; "
+  } else {
+    $cmd_launch_installer_frag = @(END_CMD_LAUNCH_INSTALLER)
+      $password = ConvertTo-SecureString $raw_password -AsPlainText -Force;
+      $cred = New-Object System.Management.Automation.PSCredential ($username, $password);
+      $arg_list = '-ExecutionPolicy Bypass .\AutoSPInstallerMain.ps1 -inputFile "' + $base_path + '\Puppet-SharePoint\AutoSPInstaller\AutoSPInstallerInput.xml" -unattended';
+      $install_proc = Start-Process "$pshome\powershell.exe" `
+        -Credential $cred `
+        -Wait `
+        -WorkingDirectory ($base_path + '\Puppet-SharePoint\AutoSPInstaller\') `
+        -ArgumentList $arg_list `
+        -PassThru `
+        -RedirectStandardOutput "C:/puppet-sharepoint/install.log";
+      If($install_proc.exitcode -ne 0) {Throw $install_proc;}
+      Else {Write-Output $install_proc;}
+      | END_CMD_LAUNCH_INSTALLER
+    $cmd_launch_installer = "${cmd_launch_installer_params}; ${cmd_launch_installer_frag}"
+  }
 
-    $cmd_check_sp_profile_service = " \
-if(!\$skip_checks) { \
- \$test_prop = \$null; \
- \$test_prop = Get-SPStateServiceApplication | ?{ \
-  \$_.DisplayName -Match \"User Profile \" \
- }; \
- if(\$test_prop -eq \$null){ \
-   \$check_failed = \$true; \
- } \
-}; "
+  $base_check_cmd = @(END_BASE_CHECK_CMD)
+    If ((Test-Path C:/Windows/windows_sharepoint_puppet_reboot.txt) -eq $true) {
+      $skip_checks = $true;
+    } Else { 
+      $skip_checks = $false;
+      Try {Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ErrorAction "SilentlyContinue";}
+      Catch {}
+      $snapin = Get-PSSnapin | Where-Object {$_.name -like "*SharePoint.PowerShell*"};
+      If($snapin.count -eq 0) {
+        $check_failed = $true;
+      } Else {
+        $check_failed = $false;
+      }
+    };
+    | END_BASE_CHECK_CMD
 
-    $cmd_cleanup_reg_and_exit = " \
-\$ErrorActionPreference = 'Stop'; \
-if(!\$skip_checks) { \
- if(\$check_failed) { \
-  exit 1; \
-  Throw \"Verify failed.\"; \
- } else { \
-  New-ItemProperty \
-   -Path \"HKLM:\\Software\\AutoSPInstaller\\\" \
-   -Name 'PuppetSharePointInstallInProgress' \
-   -Value 0 \
-   -PropertyType 'String' \
-   -Force | Out-Null; \
-  exit 0; \
- }\
-}; "
+    $cmd_check_sp_state_service = @(END_CMD_CHECK_SP_STATE_SERVICE)
+    If(!$skip_checks) { 
+      $test_prop = $null;
+      Try {$test_prop = Get-SPStateServiceApplication;}
+      Catch {}
+      If($test_prop -eq $null){ 
+        $check_failed = $true; 
+      };
+    };
+    | END_CMD_CHECK_SP_STATE_SERVICE
 
-    $sp_foundation_install_unless_cmd = " \
-${base_check_cmd} \
-${cmd_check_sp_state_service} \
+    $cmd_excel_service_check = @(END_CMD_EXCEL_SERVICE_CHECK)
+      If(!$skip_checks) { 
+        $test_prop = $null;
+        Try {
+          $test_prop = Get-SPExcelServiceApplication | Where-Object {
+            $_.DisplayName -Like "*Excel Services*"
+          };
+        } Catch {};
+        If($test_prop -eq $null) { 
+          $check_failed = $true; 
+        };
+      };
+      | END_CMD_EXCEL_SERVICE_CHECK
+
+    $cmd_check_sp_profile_service = @(END_CMD_CHECK_SP_PROFILE_SERVICE)
+      If(!$skip_checks) { 
+        $test_prop = $null;
+        Try {
+          $test_prop = Get-SPStateServiceApplication | Where-Object {
+            $_.DisplayName -Like "*User Profile*"
+          };
+        };
+        If($test_prop -eq $null) { 
+          $check_failed = $true;
+        };
+      };
+      | END_CMD_CHECK_SP_PROFILE_SERVICE
+
+    $cmd_cleanup_reg_and_exit = @(END_CMD_CLEANUP_REG_AND_EXIT)
+      If(!$skip_checks) { 
+        If($check_failed) { 
+          Exit 1; 
+          Throw "Verify failed."; 
+        } Else { 
+          New-ItemProperty `
+            -Path "HKLM:\Software\AutoSPInstaller" `
+            -Name 'PuppetSharePointInstallInProgress' `
+            -Value 0 `
+            -PropertyType 'String' `
+            -Force | Out-Null;
+          Exit 0; 
+        };
+      };
+      | END_CMD_CLEANUP_REG_AND_EXIT
+
+  $sp_foundation_install_unless_cmd = " \
+${base_check_cmd}; \
+${cmd_check_sp_state_service}; \
 ${cmd_cleanup_reg_and_exit}; "
 
-    $sp_standard_install_unless_cmd = " \
+  $sp_standard_install_unless_cmd = " \
 ${base_check_cmd} \
 ${cmd_check_sp_profile_service} \
 ${cmd_cleanup_reg_and_exit}; "
 
-    $sp_ent_install_unless_cmd = " \
+  $sp_ent_install_unless_cmd = " \
 ${base_check_cmd} \
 ${cmd_excel_service_check} \
 ${cmd_cleanup_reg_and_exit}; "
 
-    exec{'trigger_reboot_for_sp_install':
-      provider  => 'powershell',
-      command   => "write-host \"Triggering reboot.\";",
-      onlyif    => $reboot_check,
-      logoutput => true,
-      notify    => Reboot['after_auto_sp_install'],
-    }
+  exec{'trigger_reboot_for_sp_install':
+    provider  => 'powershell',
+    command   => "Write-Host \"Triggering reboot.\";",
+    onlyif    => $reboot_check,
+    logoutput => true,
+    notify    => Reboot['after_auto_sp_install'],
+  }
 
-    reboot{'after_auto_sp_install':
-      when => 'refreshed',
-    }
+  reboot{'after_auto_sp_install':
+    when => 'refreshed',
+  }
 
-    $sp_foundation_install_cmd = " \
+  $sp_foundation_install_cmd = " \
 ${cmd_launch_installer} \
 ${sp_foundation_install_unless_cmd}"
 
-    $sp_standard_install_cmd = "\
+  $sp_standard_install_cmd = "\
 ${cmd_launch_installer} \
 ${sp_standard_install_unless_cmd}"
 
-    $sp_ent_install_cmd = " \
+  $sp_ent_install_cmd = " \
 ${cmd_launch_installer} \
 ${sp_ent_install_unless_cmd}"
 
-    if($spversion == 'Foundation'){
+  case $sp_version {
+    'Foundation': {
       $final_install_cmd = $sp_foundation_install_cmd
       $final_install_unless_cmd = $sp_foundation_install_unless_cmd
-    }elsif($spversion == 'Standard'){
+    }
+    'Standard': {
       $final_install_cmd = $sp_standard_install_cmd
       $final_install_unless_cmd = $sp_standard_install_unless_cmd
-    }elsif($spversion == 'Enterprise'){
+    }
+    'Enterprise': {
       $final_install_cmd  = $sp_ent_install_cmd
       $final_install_unless_cmd = $sp_ent_install_unless_cmd
     }
+  }
+  
+  $cmd_fake_out_sp_setup_dotnet_ver = @(END_CMD_FAKE_OUT_SP_SETUP_DOTNET_VER/L)
+    $ErrorActionPreference = 'Stop'; 
+    $reg_path = "HKLM:\software\microsoft\NET Framework Setup\NDP\v4\Client"; 
+    $reg_path_simple = "HKEY_LOCAL_MACHINE\software\microsoft\NET Framework Setup\NDP\v4\Client"; 
+    setacl.exe \
+      -ot reg \
+      -on "$reg_path_simple" \
+      -actn setowner \
+      -ownr "n:Administrators" | Out-Null; 
+    setacl.exe \
+      -ot reg \
+      -on "$reg_path_simple" \
+      -actn setowner \
+      -ownr "n:Administrators" \
+      -actn ace \
+      -ace "n:Administrators;p:full" | Out-Null; 
+    $curVer = (Get-ItemProperty $reg_path).Version; 
+    If($curVer -ne "4.5.50501") { 
+      $curVer | out-file 'C:/windows/cur_dotnet_ver.txt' -Force; 
+      New-ItemProperty -path $reg_path -Name "Version" -Value "4.5.50501" -Force; 
+    };
+    | END_CMD_FAKE_OUT_SP_SETUP_DOTNET_VER
+  
+  $cmd_fix_sp_setup_dotnet_ver = @(END_CMD_FIX_SP_SETUP_DOTNET_VER)
+    $ErrorActionPreference = 'Stop'; 
+    $reg_path = "HKLM:\software\microsoft\NET Framework Setup\NDP\v4\Client"; 
+    $cur_ver = (Get-ItemProperty $reg_path).Version; 
+    $orig_ver = Get-Content 'C:/Windows/cur_dotnet_ver.txt' -Force; 
+    If($cur_ver -ne $orig_ver) { 
+      New-ItemProperty -Path $reg_path -Name "Version" -Value $orig_ver -Force;
+    };
+    | END_CMD_FIX_SP_SETUP_DOTNET_VER
+  
+  $cmd_unless_fix_sp_setup_dotnet_ver = @(END_CMD_UNLESS_FIX_SP_SETUP_DOTNET_VER)
+    $ErrorActionPreference = 'Stop'; 
+    If((Test-Path "C:/Windows/cur_dotnet_ver.txt") -eq $false) {
+      Exit 0;
+    } Else { 
+      $reg_path = "HKLM:\software\microsoft\NET Framework Setup\NDP\v4\Client"; 
+      $cur_ver = (Get-ItemProperty $reg_path).Version; 
+      $orig_ver = Get-Content 'C:/Windows/cur_dotnet_ver.txt' -Force; 
+      If($cur_ver -ne $orig_ver) {Exit 1;} Else {Exit 0;};
+    };
+    | END_CMD_UNLESS_FIX_SP_SETUP_DOTNET_VER
+  
 
-    file{'C:\windows\windows_sharepoint_puppet_reboot.txt':
-      ensure => 'absent',
+  file{'C:\windows\windows_sharepoint_puppet_reboot.txt':
+    ensure => 'absent',
+  } ->
+  exec {'fake_out_sp_setup_dotnet_ver':
+    provider    => 'powershell',
+    command     => $cmd_fake_out_sp_setup_dotnet_ver,
+    unless      => $final_install_unless_cmd,
+    logoutput   => true,
     } ->
-    exec {'fake_out_sp_setup_dotnet_ver':
-      provider  => 'powershell',
-      command   => " \
-\$ErrorActionPreference = 'Stop'; \
-\$reg_path = \"HKLM:\\software\\microsoft\\NET Framework Setup\\NDP\\v4\\Client\"; \
-\$reg_path_simple = \"HKEY_LOCAL_MACHINE\\software\\microsoft\\NET Framework Setup\\NDP\\v4\\Client\"; \
-setacl.exe \
- -ot reg \
- -on \"\$reg_path_simple\" \
- -actn setowner \
- -ownr \"n:Administrators\" | out-null; \
-setacl.exe \
- -ot reg \
- -on \"\$reg_path_simple\" \
- -actn setowner \
- -ownr \"n:Administrators\" \
- -actn ace \
- -ace \"n:Administrators;p:full\" | out-null; \
-\$curVer = (Get-ItemProperty \$reg_path).Version; \
-if(\$curVer -ne \"4.5.50501\") { \
- \$curVer | out-file 'C:\\windows\\cur_dotnet_ver.txt' -Force; \
- New-ItemProperty -path \$reg_path -Name \"Version\" -Value \"4.5.50501\" -Force; \
-}; ",
-      logoutput => true,
-    } ->
-    notify{'Calling AutoSpInstaller.':} ->
-    exec{'lauching_auto_sp_installer':
-      provider => powershell,
-      command  => $final_install_cmd,
-      timeout  => "7200",
-      unless   => $final_install_unless_cmd,
-      before   => Exec['trigger_reboot_for_sp_install'],
-    } ->
-    exec {'fix_sp_setup_dotnet_ver':
+  exec{'lauching_auto_sp_installer':
+    provider  => 'powershell',
+    command   => $final_install_cmd,
+    timeout   => '7200',
+    logoutput => true,
+    unless    => $final_install_unless_cmd,
+    before    => Exec['trigger_reboot_for_sp_install'],
+  } ->
+  exec {'fix_sp_setup_dotnet_ver':
+    provider => 'powershell',
+    command  => $cmd_fix_sp_setup_dotnet_ver,
+    unless   => $cmd_unless_fix_sp_setup_dotnet_ver,
+  }
+
+  $cmd_onlyif_set_central_admin_port_1 = "\$central_admin_port = ${central_admin_port}"
+  $cmd_onlyif_set_central_admin_port_2 =  @(END_CMD_UNLESS_SET_CENTRAL_ADMIN_PORT)
+    If((Test-Path "HKLM:\SOFTWARE\AutoSPInstaller") -eq $true) {
+      $reg_auto_sp_installer = $null;
+      $reg_auto_sp_installer = Get-ItemProperty -Path "HKLM:\SOFTWARE\AutoSPInstaller" -ErrorAction SilentlyContinue
+      If($reg_auto_sp_installer.PuppetSharePointInstallInProgress -eq '1') {
+        Exit 1;
+      } Else {
+        Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;
+        $snapin = Get-PSSnapin '*SharePoint.PowerShell' -ea SilentlyContinue;
+        If($snapin.count -eq 1){
+          $getSPStateServiceApplication = Get-SPStateServiceApplication;
+          If($getSPStateServiceApplication -eq $null){
+            Exit 1;
+          } Else {
+            $port = [Microsoft.SharePoint.Administration.SPAdministrationWebApplication]::Local.Sites.VirtualServer.Port;
+            If($port -eq $central_admin_port){Exit 1;}
+          }
+        } Else {Exit 1;}
+      } Else {
+        $port = [Microsoft.SharePoint.Administration.SPAdministrationWebApplication]::Local.Sites.VirtualServer.Port;
+        If($port -eq $central_admin_port){Exit 1;}
+      };
+    };
+    | END_CMD_UNLESS_SET_CENTRAL_ADMIN_PORT
+  
+  $cmd_onlyif_set_central_admin_port = "${cmd_onlyif_set_central_admin_port_1}; ${cmd_onlyif_set_central_admin_port_2}"
+    exec{'set_central_admin_port':
       provider => 'powershell',
       command  => " \
-\$reg_path = \"HKLM:\\software\\microsoft\\NET Framework Setup\\NDP\\v4\\Client\"; \
-\$reg_path_simple = \"HKEY_LOCAL_MACHINE\\software\\microsoft\\NET Framework Setup\\NDP\\v4\\Client\"; \
-\$orig_ver = gc 'C:\\Windows\\cur_dotnet_ver.txt' -Force; \
-\$curVer = \$reg_path.Version; \
-if(\$curVer -ne \$orig_ver) { \
-﻿New-ItemProperty -path \$reg_path -Name \"Version\" -Value \$orig_ver -Force; \
-}; "
-    }
-
-    exec{'SetCentralAdmin Port':
-      provider => powershell,
-      command  => " \
 \$ErrorActionPreference = 'Stop'; \
-Add-PSSnapin Microsoft.SharePoint.PowerShell -ea SilentlyContinue;\
-Set-SPCentralAdministration -Port ${centraladminport} -Confirm:\$false",
-      onlyif   => "\
-if((test-path \"HKLM:\\SOFTWARE\\AutoSPInstaller\\\") -eq \$true) { \
- if((Get-ItemProperty -Path \"HKLM:\\SOFTWARE\\AutoSPInstaller\\\" -ErrorAction SilentlyContinue).PuppetSharePointInstallInProgress -eq '1') {\
-  exit 1;\
- } else {\
-  Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue; \
-  \$snapin = Get-PSSnapin '*SharePoint.PowerShell' -ea SilentlyContinue; \
-  if(\$snapin.count -eq 1){ \
-   \$getSPStateServiceApplication = Get-SPStateServiceApplication; \
-   if(\$getSPStateServiceApplication -eq \$null){ \
-    exit 1; \
-   } else { \
-    \$port = [Microsoft.SharePoint.Administration.SPAdministrationWebApplication]::Local.Sites.VirtualServer.Port; \
-    if(\$port -eq ${centraladminport}){exit 1;} \
-   } \
-  } else {exit 1;} \
- } else { \
-  \$port = [Microsoft.SharePoint.Administration.SPAdministrationWebApplication]::Local.Sites.VirtualServer.Port;\
-  if(\$port -eq ${centraladminport}){exit 1;}\
- } \
-}",
+Add-PSSnapin Microsoft.SharePoint.PowerShell -ea SilentlyContinue; \
+Set-SPCentralAdministration -Port ${central_admin_port} -Confirm:\$false",
+      onlyif   => $cmd_onlyif_set_central_admin_port,
     }
 
-    if($removedefaultwebapp){
-      windows_sharepoint::webapplication{"default - $webappname":
-        url                    => "${webappurl}",
-        applicationpoolname    => "${applicationPool}",
-        webappname             => "${webappname}",
-        databasename           => "${webappdatabasename}",
-        applicationpoolaccount => "${spapppoolaccount}",
+    if($remove_default_web_app){
+      windows_sharepoint::webapplication{"default - $web_app_name":
         ensure                 => absent,
+        url                    => $web_app_url,
+        applicationpoolname    => $application_pool,
+        webappname             => $web_app_name,
+        databasename           => $web_app_database_name,
+        applicationpoolaccount => $sp_app_pool_account,
       }
 
       Exec['generate_xml'] ~>
-      Exec['Lauching AutoSPInstaller'] ~>
-      Exec['SetCentralAdmin Port'] ~>
-      Windows_sharepoint::Webapplication["default - $webappname"]
+      Exec['lauching_auto_sp_installer'] ~>
+      Exec['set_central_admin_port'] ~>
+      Windows_sharepoint::Webapplication["default - $web_app_name"]
 
     } else {
       Exec['generate_xml'] ~>
       Exec['lauching_auto_sp_installer'] ~>
-      Exec['SetCentralAdmin Port']
+      Exec['set_central_admin_port']
     }
 
-  }
 }
