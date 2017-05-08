@@ -30,6 +30,9 @@ The parent version of this project was tested on the following, and therefore th
 - SharePoint EnterPrise 2013 SP1
 
 ## Changelog
+V 0.0.11
+ - Lint fixes.
+
 V 0.0.10:
  - Fixed regression issue in cmd_launch_installer_frag which caused SharePoint installation to fail.
 

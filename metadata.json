@@ -1,6 +1,6 @@
 {
   "name": "jpuskar-windows_sharepoint",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": "jriviere",
   "summary": "Module for managing SharePoint 2013.",
   "license": "Apache License, Version 2.0",

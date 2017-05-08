@@ -1,16 +1,21 @@
+# windows_sharepoint::user
 define windows_sharepoint::user(
   $ensure          = present,
   $username        = '',
   $login           = '',
   $weburl          = '',
   $group           = '',
-  $premissionlevel = '',
+  $permissionlevel = '',
   $admin           = false,
 ){
 validate_re($ensure, '^(present|absent)$', 'valid values for ensure are \'present\' or \'absent\'')
 validate_bool($admin)
 if(!empty($permissionlevel)){
-  validate_re($permissionlevel, '^(Full Control|Edit|Contribute|Read|Design)$', 'valid values for ensure are \'Full Control\', \'Edit\', \'Contribute\', \'Read\', \'Design\' ')
+  validate_re(
+    $permissionlevel,
+    '^(Full Control|Edit|Contribute|Read|Design)$',
+    'Valid values for ensure are \'Full Control\', \'Edit\', \'Contribute\', \'Read\', \'Design\' '
+  )
 }
 if(empty($weburl)){
   fail('You need to provide a weburl')
@@ -23,7 +28,7 @@ if(empty($login)){
 }
 
 if($ensure == 'present'){
-  exec{"Add-SPUser - $login - $weburl":
+  exec{"add-spuser_${login}_${weburl}":
     provider => powershell,
     command  => "Add-PSSnapin Microsoft.SharePoint.PowerShell -ErrorAction SilentlyContinue;if(('${group}' -eq '') -or ('${group}' -eq \$null)){if('${admin}' -eq 'true'){New-SPUser -UserAlias \"\$env:userdomain\\${login}\" -Web '${weburl}' -SiteCollectionAdmin;}else{New-SPUser -UserAlias \"\$env:userdomain\\${login}\" -Web '${weburl}';}\$site = Get-SPSite '${weburl}';\$web.Update();\$web.Dispose(); }else{if('${admin}' -eq 'true' ){New-SPUser -UserAlias \"\$env:userdomain\\${login}\" -Web '${weburl}' -Group '${group}' -SiteCollectionAdmin;}else{New-SPUser -UserAlias \"\$env:userdomain\\${login}\" -Web '${weburl}' -Group '${group}';}\$site = Get-SPSite '${weburl}';\$site.RootWeb.Update();\$site.RootWeb.Dispose();}",
     timeout  => 900,

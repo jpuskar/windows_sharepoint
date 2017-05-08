@@ -23,9 +23,9 @@ define windows_sharepoint::webapplication(
   if(empty($webappname)){
     fail('You need to specify the name for the webapplication')
   }
- if($ensure == present){
+  if($ensure == present){
     exec{"WebApp - Create - ${webappname}":
-      command  => "Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;if('${databasename}' -eq ''){New-SPWebApplication -Url '${url}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}else{New-SPWebApplication -Url '${url}' -DatabaseName '${databasename}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"\$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}",
+      command  => "Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue;if('${databasename}' -eq ''){New-SPWebApplication -Url '${url}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"\$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}else{New-SPWebApplication -Url '${url}' -DatabaseName '${databasename}' -SecureSocketsLayer:\$${usessl} -Name '${webappname}' -ApplicationPool '${applicationpoolname}' -ApplicationPoolAccount (Get-SPManagedAccount \"\$env:userdomain\\${applicationpoolaccount}\") -Port ${webappport}}",
       provider => 'powershell',
       onlyif   => " \
 Add-PSSnapin 'Microsoft.SharePoint.PowerShell' -ea SilentlyContinue; \
