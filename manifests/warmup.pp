@@ -6,23 +6,23 @@
 ##
 
 define windows_sharepoint::warmup(
-  $basepath    = 'C:\\',
-  $user        = 'spfarm',
-  $password    = '',
-  $userxml     = '',
-  $hour        = '06:00',
+  $basepath = 'C:\\',
+  $user     = 'spfarm',
+  $password = '',
+  $userxml  = '',
+  $hour     = '06:00',
 ){
   
-  if(!defined(File["$basepath\\Puppet-SharePoint\\SPBestWarmUp.ps1"])){
-    file{"$basepath\\Puppet-SharePoint\\SPBestWarmUp.ps1":
-      source => "puppet:///modules/windows_sharepoint/SPBestWarmUp.ps1",
+  if(!defined(File["${basepath}\\Puppet-SharePoint\\SPBestWarmUp.ps1"])){
+    file{"${basepath}\\Puppet-SharePoint\\SPBestWarmUp.ps1":
+      source             => 'puppet:///modules/windows_sharepoint/SPBestWarmUp.ps1',
       source_permissions => ignore,
     }
   }
-  exec{"Global WarmUP":
-    provider  => "powershell",
-    command   => "[xml]\$xml = New-Object system.Xml.XmlDocument;[xml]\$xml = Get-Content '${userxml}';\$user = '${user}';\$password = '${password}';\$pwd = '';if(\$password -eq \$null -or \$password -eq \"\"){foreach(\$usr in \$xml.configuration.users.user){if(\$usr.name -eq \$user){\$pwd = \$usr.password;}}}else{\$pwd = \$password;}\$time = New-ScheduledTaskTrigger -At ${hour} -Daily;\$action=New-ScheduledTaskAction -Execute \"powershell.exe\" -Argument \"-command '${basepath}\\Puppet-SharePoint\\SPBestWarmUp.ps1'\"; \$settings=New-ScheduledTaskSettingsSet -StartWhenAvailable;Register-ScheduledTask -TaskName \"SharePoint WarmUP\" -Trigger \$time -User \"\$env:userdomain\\${user}\" -Password \$pwd -RunLevel Highest -Action \$action -Settings \$settings;",
-    onlyif    => "if((Get-ScheduledTask 'SharePoint WarmUP') -eq \$null){}else{exit 1}",
-    require   => File["$basepath\\Puppet-SharePoint\\SPBestWarmUp.ps1"],
+  exec{'global_warmup':
+    provider => 'powershell',
+    command  => "[xml]\$xml = New-Object system.Xml.XmlDocument;[xml]\$xml = Get-Content '${userxml}';\$user = '${user}';\$password = '${password}';\$pwd = '';if(\$password -eq \$null -or \$password -eq \"\"){foreach(\$usr in \$xml.configuration.users.user){if(\$usr.name -eq \$user){\$pwd = \$usr.password;}}}else{\$pwd = \$password;}\$time = New-ScheduledTaskTrigger -At ${hour} -Daily;\$action=New-ScheduledTaskAction -Execute \"powershell.exe\" -Argument \"-command '${basepath}\\Puppet-SharePoint\\SPBestWarmUp.ps1'\"; \$settings=New-ScheduledTaskSettingsSet -StartWhenAvailable;Register-ScheduledTask -TaskName \"SharePoint WarmUP\" -Trigger \$time -User \"\$env:userdomain\\${user}\" -Password \$pwd -RunLevel Highest -Action \$action -Settings \$settings;",
+    onlyif   => 'if((Get-ScheduledTask \'SharePoint WarmUP\') -eq \$null){}else{exit 1}',
+    require  => File["${basepath}\\Puppet-SharePoint\\SPBestWarmUp.ps1"],
   }
 }

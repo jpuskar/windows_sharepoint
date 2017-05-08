@@ -151,6 +151,9 @@ ${base_path}/Puppet-SharePoint/generatexml.ps1",
     $cmd_launch_installer = "${cmd_launch_installer_params}; ${cmd_launch_installer_frag}"
 
   } else {
+    # There be dragons.
+    # Basically, we have to launch PowerShell as the setup user,
+    # then launch another powershell process with the user's UAC token.
     $cmd_launch_installer_frag = @(END_CMD_LAUNCH_INSTALLER)
       $password = ConvertTo-SecureString $raw_password -AsPlainText -Force;
       $cred = New-Object System.Management.Automation.PSCredential ($username, $password);
@@ -211,7 +214,7 @@ ${base_path}/Puppet-SharePoint/generatexml.ps1",
     $cmd_check_sp_state_service = @(END_CMD_CHECK_SP_STATE_SERVICE)
     If(!$skip_checks) { 
       $test_prop = $null;
-      Try {$test_prop = Get-SPStateServiceApplication;}
+      Try {$test_prop = Get-SPSite;}
       Catch {}
       If($test_prop -eq $null){ 
         $check_failed = $true; 
@@ -316,6 +319,7 @@ ${sp_ent_install_unless_cmd}"
       $final_install_cmd  = $sp_ent_install_cmd
       $final_install_unless_cmd = $sp_ent_install_unless_cmd
     }
+    default: {fail('sp_version must be one of: Foundation, Standard, Enterprise.')}
   }
   
   $cmd_fake_out_sp_setup_dotnet_ver = @(END_CMD_FAKE_OUT_SP_SETUP_DOTNET_VER/L)
@@ -368,10 +372,10 @@ ${sp_ent_install_unless_cmd}"
     ensure => 'absent',
   } ->
   exec {'fake_out_sp_setup_dotnet_ver':
-    provider    => 'powershell',
-    command     => $cmd_fake_out_sp_setup_dotnet_ver,
-    unless      => $final_install_unless_cmd,
-    logoutput   => true,
+    provider  => 'powershell',
+    command   => $cmd_fake_out_sp_setup_dotnet_ver,
+    unless    => $final_install_unless_cmd,
+    logoutput => true,
     } ->
   exec{'lauching_auto_sp_installer':
     provider  => 'powershell',
@@ -424,7 +428,7 @@ Set-SPCentralAdministration -Port ${central_admin_port} -Confirm:\$false",
     }
 
     if($remove_default_web_app){
-      windows_sharepoint::webapplication{"default - $web_app_name":
+      windows_sharepoint::webapplication{"default - ${web_app_name}":
         ensure                 => absent,
         url                    => $web_app_url,
         applicationpoolname    => $application_pool,
@@ -436,7 +440,7 @@ Set-SPCentralAdministration -Port ${central_admin_port} -Confirm:\$false",
       Exec['generate_xml'] ~>
       Exec['lauching_auto_sp_installer'] ~>
       Exec['set_central_admin_port'] ~>
-      Windows_sharepoint::Webapplication["default - $web_app_name"]
+      Windows_sharepoint::Webapplication["default - ${web_app_name}"]
 
     } else {
       Exec['generate_xml'] ~>

@@ -40,7 +40,7 @@ define windows_sharepoint::group(
   if($ensure == 'present') {
 
     $cmd_ensure_sp_group_params = @("END_CMD_ENSURE_SP_GROUP_PARAMS"/$)
-          \$owner_name       = "${ownername}";
+      \$owner_name       = "${ownername}";
       \$web_url          = "${weburl}";
       \$permission_level = "${permissionlevel}";
       \$member           = "${member}";
@@ -49,42 +49,42 @@ define windows_sharepoint::group(
       | END_CMD_ENSURE_SP_GROUP_PARAMS
 
     $cmd_ensure_sp_group_frag = @(END_CMD_ENSURE_SP_GROUP_FRAG)
-    Add-PSSnapin Microsoft.SharePoint.PowerShell -ea SilentlyContinue;
-          $member = $null;
-          $description = $null;
-          $owner_qual_name = $env:userdomain + "\" + $owner_name;
-          $web = Get-SPWeb $web_url;
-          $web.AllowUnsafeUpdates = $true;
-          If ($member -eq '') {$member = $null};
-          If ($description -eq '') {$description = $null};
-          $owner = $web | Get-SPUser -identity $owner_qual_name;
-          $web.SiteGroups.Add($group_name, $owner, $member, $description);
-          $group = $web.SiteGroups[$group_name];
-          $web.RoleAssignments.Add($group);
-          $roleAssignment = new-object Microsoft.SharePoint.SPRoleAssignment($group);
-          $roleDefinition = $web.Site.RootWeb.RoleDefinitions[$permission_level];
-          $roleAssignment.RoleDefinitionBindings.Add($roleDefinition);
-          $web.RoleAssignments.Add($roleAssignment);
-          $web.Update();
-          $web.Dispose();
-          $web.AllowUnsafeUpdates = $false;
+      Add-PSSnapin Microsoft.SharePoint.PowerShell -ea SilentlyContinue;
+      $member = $null;
+      $description = $null;
+      $owner_qual_name = $env:userdomain + "\" + $owner_name;
+      $web = Get-SPWeb $web_url;
+      $web.AllowUnsafeUpdates = $true;
+      If ($member -eq '') {$member = $null};
+      If ($description -eq '') {$description = $null};
+      $owner = $web | Get-SPUser -identity $owner_qual_name;
+      $web.SiteGroups.Add($group_name, $owner, $member, $description);
+      $group = $web.SiteGroups[$group_name];
+      $web.RoleAssignments.Add($group);
+      $roleAssignment = new-object Microsoft.SharePoint.SPRoleAssignment($group);
+      $roleDefinition = $web.Site.RootWeb.RoleDefinitions[$permission_level];
+      $roleAssignment.RoleDefinitionBindings.Add($roleDefinition);
+      $web.RoleAssignments.Add($roleAssignment);
+      $web.Update();
+      $web.Dispose();
+      $web.AllowUnsafeUpdates = $false;
       | END_CMD_ENSURE_SP_GROUP_FRAG
     $cmd_ensure_sp_group = "${cmd_ensure_sp_group_params}; ${cmd_ensure_sp_group_frag}"
 
     $onlyif_add_spgroup_param = @("END_ONLYIF_ADD_SPGROUP_PARAM"/$)
-          \$weburl    = "${weburl}";
+      \$weburl    = "${weburl}";
       \$groupname = "${groupname}";
       | END_ONLYIF_ADD_SPGROUP_PARAM
 
     $onlyif_add_spgroup_frag = @(END_ONLYIF_ADD_SPGROUP_FRAG)
-    Add-PSSnapin Microsoft.SharePoint.PowerShell -ea SilentlyContinue;
-          $site = Get-SPSite $weburl -ErrorAction SilentlyContinue;
-          $url = $site.url;
-          If($url -eq $weburl){
-            If($site.RootWeb.Groups[$groupname] -ne $null) {
-              Exit 1;
-            };
-          };
+      Add-PSSnapin Microsoft.SharePoint.PowerShell -ea SilentlyContinue;
+      $site = Get-SPSite $weburl -ErrorAction SilentlyContinue;
+      $url = $site.url;
+      If($url -eq $weburl){
+        If($site.RootWeb.Groups[$groupname] -ne $null) {
+          Exit 1;
+        };
+      };
       | END_ONLYIF_ADD_SPGROUP_FRAG
     $onlyif_add_spgroup = "${onlyif_add_spgroup_param}; ${onlyif_add_spgroup_frag};"
 

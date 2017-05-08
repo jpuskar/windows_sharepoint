@@ -117,17 +117,6 @@ class windows_sharepoint (
   $web_app_name                                  = 'SharePoint Default Web App',
   $web_app_port                                  = 443,
   $web_app_database_name                         = 'Content_SharePointDefault',
-
-  ##Install
-  $autospinstaller_pkg_ensure                    = 'latest',
-  $autospinstaller_pkg_name                      = 'autospinstaller',
-  $autospinstaller_pkg_source                    = undef,
-  $autospinstaller_pkg_provider                  = 'chocolatey',
-  $setacl_pkg_ensure                             = 'latest',
-  $setacl_pkg_name                               = 'setacl',
-  $setacl_pkg_source                             = undef,
-  $setacl_pkg_provider                           = 'chocolatey',
-  $setacl_install_dir                            = 'C:/Program Files/setacl'
   
   ##DefaultSiteCol
   $site_url                                      = 'https://localhost',
@@ -175,6 +164,7 @@ class windows_sharepoint (
     'Foundation': {$other_accounts_to_check = []}
     'Standard':   {$other_accounts_to_check = [$sp_sync_account, $sp_usr_prf_account]}
     'Enterprise': {$other_accounts_to_check = [$sp_sync_account, $sp_usr_prf_account, $sp_excel_account]}
+    default: {fail('sp_version must be one of: Foundation, Standard, Enterprise.')}
   }
 
   $all_accounts_to_check = concat($base_accounts_to_check, $other_accounts_to_check)
@@ -200,7 +190,7 @@ class windows_sharepoint (
     fail('site_col_owner cannot be empty')
   }
 
-  if($sp_version != "Foundation" and empty($key)){
+  if($sp_version != 'Foundation' and empty($key)){
     fail('Key (serial number) cannot be empty unless sp_version is Foundation.')
   }
 
@@ -217,9 +207,9 @@ class windows_sharepoint (
     fail('central_admin_port must be > 1023, < 32767, and != [443, 80].')
   }
 
-  class{"windows_sharepoint::prepsp":}
-  class{"windows_sharepoint::stage_bin":}
-  class{"windows_sharepoint::install":}
+  class{'windows_sharepoint::prepsp':}
+  class{'windows_sharepoint::stage_bin':}
+  class{'windows_sharepoint::install':}
 
   anchor{'windows_sharepoint::begin':} ->
   Class['windows_sharepoint::prepsp'] ->
